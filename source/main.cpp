@@ -3,41 +3,16 @@
 #include "utils.hpp"
 #include "gui.hpp"
 
-sf::Event g_curEvent;
-
-void button(buttonContext cont){
-	sf::Texture active = cont.defaultTexture;
-	// hover
-	if (g_curEvent.type == sf::Event::MouseMoved){
-		if (inRange<float>(cont.pos.x, cont.pos.x + cont.size.x, g_curEvent.mouseMove.x) && inRange<float>(cont.pos.y, cont.pos.y + cont.size.y, g_curEvent.mouseMove.y)){
-			active = cont.hoverTexture;
-		}
-	}
-	// pressed
-	if (g_curEvent.type == sf::Event::MouseButtonPressed){
-		if (inRange<float>(cont.pos.x, cont.pos.x + cont.size.x, g_curEvent.mouseButton.x) && inRange<float>(cont.pos.y, cont.pos.y + cont.size.y, g_curEvent.mouseButton.y)){
-			active = cont.clickedTexture;
-		}
-	}
-	// released
-	if (g_curEvent.type == sf::Event::MouseButtonReleased){
-		if (inRange<float>(cont.pos.x, cont.pos.x + cont.size.x, g_curEvent.mouseButton.x) && inRange<float>(cont.pos.y, cont.pos.y + cont.size.y, g_curEvent.mouseButton.y)){
-			cont.function();
-			active = cont.hoverTexture;
-		}
-	}
-	sf::Sprite toDraw;
-	toDraw.setTexture(active);
-	toDraw.setPosition(cont.pos.x, cont.pos.y);
-	sf::Vector2u texSize;
-	texSize = active.getSize();
-	toDraw.setScale(sf::Vector2f(cont.size.x / texSize.x, cont.size.y / texSize.y));
-	cont.window->draw(toDraw);
-}
-
 int clicked(){
 	std::cout << "clicked" << "\n";
+	state = 1;
 	return 0;
+}
+
+sf::Texture textures[16];
+
+void loadTextures(){
+	textures[0] = sf::Texture();
 }
 
 void MainMenu(sf::RenderWindow &win) {
@@ -74,7 +49,25 @@ void DebugScreen(sf::RenderWindow &win){
 	win.draw(cell);
 }
 
+int MAP[16][16];
+
+void GameScreen(sf::RenderWindow &win){
+	for(int i = 0; i < 16; i++){
+		for(int i1 = 0; i1 < 16; i1++){
+			int curBlock = MAP[i][i1];
+			if (curBlock == 1){
+
+			}
+		}
+	}
+}
+
 int main(){
+	for(int i = 0; i < 16; i++){
+		for(int i1 = 0; i1 < 16; i1++){
+			MAP[i][i1] = 1;
+		}
+	}
 	int width = 1000, height = 1000;
 	sf::RenderWindow window(sf::VideoMode(width, height), "EscapeFromTwilight", sf::Style::Default);
 	window.setPosition({0,0});
@@ -86,6 +79,7 @@ int main(){
 		sf::Event event;
 		while (window.pollEvent(event))
 		{	
+			handleEvent(event);
 			g_curEvent = event;
 			if (event.type == sf::Event::Closed){
 				window.close();
@@ -97,12 +91,6 @@ int main(){
 				view.setSize(sf::Vector2f(width, height));
 				view.setCenter(sf::Vector2f(width / 2, height / 2));
 				window.setView(view);
-			}
-			if (event.type == sf::Event::MouseWheelMoved){
-				// zoom *= 1 + event.mouseWheel.delta * 0.05;
-				// std::cout << zoom << '\n';
-				// // view.zoom(1 + event.mouseWheel.delta * 0.05);
-				// window.setView(view);
 			}
 			if (event.type == sf::Event::KeyReleased){
 				if (event.key.code == sf::Keyboard::Escape){
@@ -119,7 +107,15 @@ int main(){
 			}
 		}
 		window.clear();
-		MainMenu(window);
+		if (state == 0){
+			MainMenu(window);
+		}
+		if (state == 1){
+			DebugScreen(window);
+		}
+		if (state == 2){
+			MainMenu(window);
+		}
 		window.display();
     }
 }

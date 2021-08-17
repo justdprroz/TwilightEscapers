@@ -14,4 +14,5 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 
 rem Build projects
 
-"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe" ".\Twilight Escapers.sln"
+@REM There is an error with images when building from cmd
+@REM "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe" ".\Twilight Escapers.sln"
