@@ -6,11 +6,21 @@
 
 const siv::PerlinNoise perlin(time(NULL));
 int const MAPsize = 64;
-float scale = 1;
+float scale = 2;
 int MAP[MAPsize][MAPsize];
 sf::Texture textures[16];
-std::pair<int, int> playerPos = {100, 200};
+std::pair<float, float> playerPos = {4, 5};
+float plOnScX = 4 * 16 * 2, plOnScY = 5 * 16 * 2;
+float dvx = 0, dvy = 0;
+sf::Texture playerTextureFront;
+sf::Texture playerTextureBack;
 sf::Texture playerTexture;
+int tilesize = 16;
+sf::Clock clockS;
+float velX;
+float velY;
+bool Wpress, Apress, Spress, Dpress;
+int speed = 5;
 
 int clicked(){
 	std::cout << "clicked" << "\n";
@@ -24,7 +34,9 @@ void loadTextures(){
 	std::cout << "Stone: " << textures[0].loadFromFile("textures/tiles/normal/stone.png") << '\n';
 	std::cout << "Grass: " << textures[1].loadFromFile("textures/tiles/normal/grass.png") << '\n';
 	std::cout << "loading entities textures\n";
-	std::cout << "Guard: " << playerTexture.loadFromFile("textures/entities/guard.png") << '\n';
+	std::cout << "Guard front: " << playerTextureFront.loadFromFile("textures/entities/guard.png", sf::IntRect(0, 0, 32, 32)) << '\n';
+	std::cout << "Guard back: " << playerTextureBack.loadFromFile("textures/entities/guard.png", sf::IntRect(32, 0, 32, 32)) << '\n';
+	playerTexture = playerTextureFront;
 	std::cout << "Textures loaded\n";
 }
 
@@ -64,11 +76,13 @@ void DebugScreen(sf::RenderWindow &win){
 
 
 void drawEntities(sf::RenderWindow &win){
-		sf::Sprite cell;
-		cell.setTexture(playerTexture);
-		cell.setPosition(playerPos.first, playerPos.second);
-		cell.setScale(sf::Vector2f(scale,scale));
-		win.draw(cell);
+	float locscaleX = (float)tilesize / (float)playerTexture.getSize().x;
+	float locscaleY = (float)tilesize / (float)playerTexture.getSize().y;
+	sf::Sprite cell;
+	cell.setTexture(playerTexture);
+	cell.setPosition(playerPos.first * tilesize * scale, playerPos.second * tilesize * scale);
+	cell.setScale(sf::Vector2f(locscaleX * scale,locscaleY * scale));
+	win.draw(cell);
 }
 
 void drawTiles(sf::RenderWindow &win) {
@@ -77,7 +91,7 @@ void drawTiles(sf::RenderWindow &win) {
 			int curBlock = MAP[i][i1];
 			sf::Sprite cell;
 			cell.setTexture(textures[curBlock]);
-			cell.setPosition(i * 16 * scale, i1 * 16 * scale);
+			cell.setPosition(i * tilesize * scale, i1 * tilesize * scale);
 			cell.setScale(sf::Vector2f(scale,scale));
 			win.draw(cell);
 		}
@@ -92,7 +106,7 @@ void GameScreen(sf::RenderWindow &win){
 void generateMap(){
 	for(int i = 0; i < MAPsize; i++){
 		for(int i1 = 0; i1 < MAPsize; i1++){
-			int noise = (int)(perlin.accumulatedOctaveNoise2D_0_1(i * 4.0 / MAPsize, i1 * 4.0 / MAPsize, 8) * 32) % 2;
+			int noise = (int)(perlin.accumulatedOctaveNoise2D_0_1(i * 4.0 / MAPsize, i1 * 4.0 / MAPsize, 8) * 8) % 2;
 			MAP[i][i1] = noise;
 		}
 	}
@@ -108,7 +122,9 @@ int main(){
 	window.setView(view);
 	float zoom = 2.f;
 	while (window.isOpen())
-    {
+    {	
+		double lastframetime = clockS.getElapsedTime().asSeconds();
+		clockS.restart();
 		sf::Event event;
 		while (window.pollEvent(event))
 		{	
@@ -123,21 +139,41 @@ int main(){
 				width = event.size.width;
 				height = event.size.height;
 				view.setSize(sf::Vector2f(width * scale, height * scale));
-				view.setCenter(sf::Vector2f(width / 2, height / 2));
+				view.setCenter(sf::Vector2f(width / 2 + dvx, height / 2 + dvy));
 				window.setView(view);
+			}
+			if (event.type == sf::Event::KeyPressed){
+				if (event.key.code == sf::Keyboard::W){
+					Wpress = true;
+				}
+				if (event.key.code == sf::Keyboard::S){
+					Spress = true;
+				}
+				if (event.key.code == sf::Keyboard::D){
+					Dpress = true;
+				}
+				if (event.key.code == sf::Keyboard::A){
+					Apress = true;
+				}
 			}
 			if (event.type == sf::Event::KeyReleased){
 				if (event.key.code == sf::Keyboard::Escape){
 					window.close();
 					return 0;
 				}
-			}
-			if (event.type == sf::Event::KeyPressed){
 				if (event.key.code == sf::Keyboard::W){
-					
+					Wpress = false;
+				}
+				if (event.key.code == sf::Keyboard::S){
+					Spress = false;
+				}
+				if (event.key.code == sf::Keyboard::D){
+					Dpress = false;
+				}
+				if (event.key.code == sf::Keyboard::A){
+					Apress = false;
 				}
 			}
-
 			if (event.type == sf::Event::MouseMoved){
 
 			}
@@ -150,6 +186,41 @@ int main(){
 			DebugScreen(window);
 		}
 		if (state == 2){
+			velX = 0;
+			velY = 0;
+			if (Wpress){
+				playerTexture = playerTextureBack;
+				velY -= speed;
+			}
+			if (Spress){
+				playerTexture = playerTextureFront;
+				velY += speed;
+			}
+			if (Dpress){
+				velX += speed;
+			}
+			if (Apress){
+				velX -= speed;
+			}
+			float dY = velY * lastframetime, dX = velX * lastframetime;
+			playerPos.first += dX;
+			playerPos.second += dY;
+			std::cout << view.getSize().x << ' ' << view.getSize().y << '\n';
+			std::cout << window.getSize().x << ' ' << window.getSize().y << '\n';
+			// std::cout << plOnScX << ' ' << plOnScY << '\n';
+			if (plOnScX < 200 && dX < 0 || plOnScX > window.getSize().x - 200 && dX > 0){
+				dvx += dX * tilesize * 2;
+				view.move(dX * tilesize * 2, 0);
+			} else{
+				plOnScX += dX * tilesize * 2;
+			}
+			if (plOnScY < 200 && dY < 0 || plOnScY > window.getSize().y - 200 && dY > 0){
+				view.move(0, dY * tilesize * 2);
+				dvy += dY * tilesize * 2;
+			} else{
+				plOnScY += dY * tilesize * 2;
+			}
+			window.setView(view);
 			GameScreen(window);
 		}
 		window.display();
