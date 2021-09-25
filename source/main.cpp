@@ -142,8 +142,8 @@ void drawEntities(sf::RenderWindow &win){
 }
 
 void drawTiles(sf::RenderWindow &win) {
-    for(int i = std::max(tileStartX, 0); i <= std::min(tileStopX, MAPsize - 1); i++){
-        for(int i1 = std::max(tileStartY, 0); i1 <= std::min(tileStopY, MAPsize - 1); i1++){
+    for(int i = std::max(tileStartX - 1, 0); i <= std::min(tileStopX + 1, MAPsize - 1); i++){
+        for(int i1 = std::max(tileStartY - 1, 0); i1 <= std::min(tileStopY + 1, MAPsize - 1); i1++){
             int curBlock = MAP[i][i1];
             sf::Sprite cell;
             cell.setTexture(textures[curBlock]);
