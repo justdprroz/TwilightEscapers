@@ -32,6 +32,7 @@ int mapshiftoffset = 100;
 sf::Font font;
 std::stringstream logger;
 int tileStartY = 0, tileStartX = 0, tileStopY = 0, tileStopX = 0;
+bool debug = 0;
 
 int play(){
     state = 2;
@@ -179,7 +180,10 @@ int main(){
     sf::RenderWindow window(sf::VideoMode(width, height), "EscapeFromTwilight", sf::Style::Default);
     window.setView(view);
 
-    sf::RenderWindow debugWindow(sf::VideoMode(width, height), "Debug Tools", sf::Style::Default);
+    sf::RenderWindow debugWindow;
+    if (debug) {
+        debugWindow.create(sf::VideoMode(width, height), "Debug Tools", sf::Style::Default);
+    }
 
     while (window.isOpen())
     {   
@@ -217,7 +221,19 @@ int main(){
                     Spress = true;
                 }
                 if (event.key.code == sf::Keyboard::D){
-                    Dpress = true;
+                    if (state == 2){
+                        Dpress = true;
+                    }
+                    else if (state == 0){
+                        if (debug == 1){
+                            debugWindow.close();
+                            debug = 0;
+                        } 
+                        else if (debug == 0){
+                            debugWindow.create(sf::VideoMode(width, height), "Debug Tools", sf::Style::Default);
+                            debug = 1;
+                        }
+                    }
                 }
                 if (event.key.code == sf::Keyboard::A){
                     Apress = true;
