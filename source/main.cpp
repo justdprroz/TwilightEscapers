@@ -6,7 +6,7 @@
 #include <sstream>
 
 const siv::PerlinNoise perlin(time(NULL));
-int const MAPsize = 1 << 14;
+int const MAPsize = 1 << 6;
 float scale = 2;
 int tilesize = 16;
 int MAP[MAPsize][MAPsize];
@@ -23,7 +23,7 @@ bool Wpress, Apress, Spress, Dpress;
 int speed = 10;
 float zoom = 1.f;
 sf::View view;
-int width = 800, height = 600;
+int width = 800, height = 800;
 float plOnScX = playerPos.first * tilesize * scale;
 float plOnScY = playerPos.second * tilesize * scale;
 float plOnWinX = 0;
@@ -141,8 +141,8 @@ void drawEntities(sf::RenderWindow &win){
 }
 
 void drawTiles(sf::RenderWindow &win) {
-    for(int i = tileStartX; i <= tileStopX; i++){
-        for(int i1 = tileStartY; i1 <= tileStopY; i1++){
+    for(int i = std::max(tileStartX, 0); i <= std::min(tileStopX, MAPsize - 1); i++){
+        for(int i1 = std::max(tileStartY, 0); i1 <= std::min(tileStopY, MAPsize - 1); i1++){
             int curBlock = MAP[i][i1];
             sf::Sprite cell;
             cell.setTexture(textures[curBlock]);
