@@ -27,7 +27,7 @@ float plOnScX = playerPos.first * tilesize * scale;
 float plOnScY = playerPos.second * tilesize * scale;
 float plOnWinX = 0;
 float plOnWinY = 0;
-
+int mapshiftoffset = 100;
 
 int play(){
     state = 2;
@@ -105,14 +105,14 @@ void DebugScreen(sf::RenderWindow &win){
     win.setView(dv);
     sf::Vertex line[] =
     {
-        sf::Vertex(sf::Vector2f(200, 0), sf::Color::Red),
-        sf::Vertex(sf::Vector2f(200, height), sf::Color::Red),
-        sf::Vertex(sf::Vector2f(width - 200, 0), sf::Color::Red),
-        sf::Vertex(sf::Vector2f(width - 200, height), sf::Color::Red),
-        sf::Vertex(sf::Vector2f(0, 200), sf::Color::Red),
-        sf::Vertex(sf::Vector2f(width, 200), sf::Color::Red),
-        sf::Vertex(sf::Vector2f(0, height - 200), sf::Color::Red),
-        sf::Vertex(sf::Vector2f(width, height - 200), sf::Color::Red)
+        sf::Vertex(sf::Vector2f(mapshiftoffset, 0), sf::Color::Red),
+        sf::Vertex(sf::Vector2f(mapshiftoffset, height), sf::Color::Red),
+        sf::Vertex(sf::Vector2f(width - mapshiftoffset, 0), sf::Color::Blue),
+        sf::Vertex(sf::Vector2f(width - mapshiftoffset, height), sf::Color::Blue),
+        sf::Vertex(sf::Vector2f(0, mapshiftoffset), sf::Color::Red),
+        sf::Vertex(sf::Vector2f(width, mapshiftoffset), sf::Color::Red),
+        sf::Vertex(sf::Vector2f(0, height - mapshiftoffset), sf::Color::Blue),
+        sf::Vertex(sf::Vector2f(width, height - mapshiftoffset), sf::Color::Blue)
     };
     win.draw(line, 8, sf::Lines);
 }
@@ -264,19 +264,31 @@ int main(){
                 velX -= speed;
             }
             float dY = velY * lastframetime, dX = velX * lastframetime;
-            playerPos.first += dX;
-            playerPos.second += dY;
+            if (playerPos.first + dX >= 0 && playerPos.first + dX <= MAPsize - 0.9f){
+                playerPos.first += dX;
+            } else {
+                dX = 0;
+            }
+            if (playerPos.second + dY >= 0 && playerPos.second + dY <= MAPsize - 0.9f){
+                playerPos.second += dY;
+            } else {
+                dY = 0;
+            }
+            playerPos.first = std::min(std::max(0.f, playerPos.first), (float)(MAPsize - 0.9f));
+            playerPos.second = std::min(std::max(0.f, playerPos.second), (float)(MAPsize - 0.9f));
             std::cout << playerPos.first << ' ' << playerPos.second << '\n';
             plOnWinX = width / 2 - (width / 2 - plOnScX) / zoom;
             plOnWinY = height / 2 - (height / 2 - plOnScY) / zoom;
-            if (plOnWinX < 200 && dX < 0 && tilesize * scale * playerPos.first > 200 * zoom ||
-                plOnWinX > width - 200 && dX > 0 && tilesize * scale * playerPos.first < MAPsize * tilesize * scale - 200 * zoom){
+
+
+            if (plOnWinX < mapshiftoffset && dX < 0 && tilesize * scale * playerPos.first > mapshiftoffset * zoom ||
+                plOnWinX > width - mapshiftoffset && dX > 0 && tilesize * scale * playerPos.first < MAPsize * tilesize * scale - mapshiftoffset * zoom){
                 dvx += dX * tilesize * scale;
             } else {
                 plOnScX += dX * tilesize * scale;
             }
-            if (plOnWinY < 200 && dY < 0 && tilesize * scale * playerPos.second > 200 * zoom ||
-                plOnWinY > height - 200 && dY > 0 && tilesize * scale * playerPos.second < MAPsize * tilesize * scale - 200 * zoom){
+            if (plOnWinY < mapshiftoffset && dY < 0 && tilesize * scale * playerPos.second > mapshiftoffset * zoom ||
+                plOnWinY > height - mapshiftoffset && dY > 0 && tilesize * scale * playerPos.second < MAPsize * tilesize * scale - mapshiftoffset * zoom){
                 dvy += dY * tilesize * scale;
             } else {
                 plOnScY += dY * tilesize * scale;
