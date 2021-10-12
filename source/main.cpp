@@ -185,6 +185,9 @@ int main(){
         debugWindow.create(sf::VideoMode(width, height), "Debug Tools", sf::Style::Default);
     }
 
+    std::cout << "hello! press enter to continue" << "\n";
+    std::cin;
+
     while (window.isOpen())
     {   
         // frametimer for movemets & etc
@@ -197,7 +200,7 @@ int main(){
         // event processing
         sf::Event event;
         while (window.pollEvent(event))
-        {    
+        {
             handleEvent(event);
             g_curEvent = event;
             if (event.type == sf::Event::Closed){
