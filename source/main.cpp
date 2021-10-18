@@ -1,12 +1,18 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include "utils.hpp"
-#include "gui.hpp"
 #include "noise.hpp"
 #include <sstream>
 
+vec2f mousePos = vec2f(0, 0);
+int mouseButton = -1;
+bool released;
+sf::Event g_curEvent;
+bool newEvent;
+int state = 0;
+
 const siv::PerlinNoise perlin(time(NULL));
-int const MAPsize = 1 << 6;
+int const MAPsize = 1 << 10;
 float scale = 2;
 int tilesize = 16;
 int MAP[MAPsize][MAPsize];
@@ -33,6 +39,55 @@ sf::Font font;
 std::stringstream logger;
 int tileStartY = 0, tileStartX = 0, tileStopY = 0, tileStopX = 0;
 bool debug = 0;
+
+struct buttonContext {
+    vec2f pos;
+    vec2f size;
+    sf::Texture defaultTexture;
+    sf::Texture hoverTexture;
+    sf::Texture clickedTexture;
+    int (*function)();
+    sf::RenderWindow* window;
+};
+
+void handleEvent(sf::Event &e){
+    if (e.type == sf::Event::MouseMoved){
+        mousePos = {(float)e.mouseMove.x, (float)e.mouseMove.y};
+    }
+    if (e.type == sf::Event::MouseButtonPressed){
+        mouseButton = e.mouseButton.button;
+    }
+    if (e.type == sf::Event::MouseButtonReleased){
+        mouseButton = -1;
+        released = true;
+    }
+}
+
+bool button(buttonContext cont){
+    // Draw
+    sf::Texture active = cont.defaultTexture;
+    if (inRange<float>(cont.pos.x, cont.pos.x + cont.size.x, mousePos.x) && inRange<float>(cont.pos.y, cont.pos.y + cont.size.y, mousePos.y)){
+        active = cont.hoverTexture;
+    }
+    if (inRange<float>(cont.pos.x, cont.pos.x + cont.size.x, mousePos.x) && inRange<float>(cont.pos.y, cont.pos.y + cont.size.y, mousePos.y) && mouseButton > -1){
+        active = cont.clickedTexture;
+    }
+    if (g_curEvent.type == sf::Event::MouseButtonReleased){
+        if (inRange<float>(cont.pos.x, cont.pos.x + cont.size.x, g_curEvent.mouseButton.x) && inRange<float>(cont.pos.y, cont.pos.y + cont.size.y, g_curEvent.mouseButton.y)){
+            cont.function();
+            active = cont.hoverTexture;
+        }
+    }
+    sf::Sprite toDraw;
+    toDraw.setTexture(active);
+    toDraw.setPosition(cont.pos.x, cont.pos.y);
+    sf::Vector2u texSize;
+    texSize = active.getSize();
+    toDraw.setScale(sf::Vector2f(cont.size.x / texSize.x, cont.size.y / texSize.y));
+    cont.window->draw(toDraw);
+    // Return if pressed
+    return false;
+}
 
 int play(){
     state = 2;
@@ -123,12 +178,32 @@ void DebugMapShiftBorders(sf::RenderWindow &win){
 }
 
 void DebugLogger(sf::RenderWindow &win){
+    sf::View dv(sf::Vector2f(width / 2, height / 2),sf::Vector2f(width, height));
+    win.setView(dv);
     sf::Text text;
     text.setString(logger.str());
     text.setFont(font);
     text.setCharacterSize(16);
     text.setFillColor(sf::Color::Black);
+    text.setOutlineColor(sf::Color::White);
+    text.setOutlineThickness(1);
     win.draw(text);
+}
+
+void DebugCurrentTile(sf::RenderWindow &win){
+    view.setSize(sf::Vector2f(width, height));
+    view.setCenter(sf::Vector2f(width / 2 + dvx, height / 2 + dvy));
+    view.zoom(zoom);
+    win.setView(view);
+    sf::RectangleShape cell;
+    cell.setFillColor(sf::Color(255, 0, 0, 64));
+    cell.setPosition((int)playerPos.first * tilesize * scale, (int)playerPos.second * tilesize * scale);
+    cell.setSize({tilesize * scale, tilesize * scale});
+    win.draw(cell);
+    cell.setFillColor(sf::Color(0, 0, 255, 64));
+    cell.setPosition(playerPos.first * tilesize * scale, playerPos.second * tilesize * scale);
+    cell.setSize({tilesize * scale, tilesize * scale});
+    win.draw(cell);
 }
 
 void drawEntities(sf::RenderWindow &win){
@@ -174,19 +249,19 @@ void generateMap(){
 
 int main(){
     // initialization
+
+
+    std::cout << font.loadFromFile("arial.ttf") << '\n';
+
     loadTextures();
     generateMap();
-    font.loadFromFile("arial.ttf");
+
     sf::RenderWindow window(sf::VideoMode(width, height), "EscapeFromTwilight", sf::Style::Default);
     window.setView(view);
 
-    sf::RenderWindow debugWindow;
-    if (debug) {
-        debugWindow.create(sf::VideoMode(width, height), "Debug Tools", sf::Style::Default);
-    }
-
     std::cout << "hello! press enter to continue" << "\n";
     std::cin;
+
 
     while (window.isOpen())
     {   
@@ -227,19 +302,12 @@ int main(){
                     if (state == 2){
                         Dpress = true;
                     }
-                    else if (state == 0){
-                        if (debug == 1){
-                            debugWindow.close();
-                            debug = 0;
-                        } 
-                        else if (debug == 0){
-                            debugWindow.create(sf::VideoMode(width, height), "Debug Tools", sf::Style::Default);
-                            debug = 1;
-                        }
-                    }
                 }
                 if (event.key.code == sf::Keyboard::A){
                     Apress = true;
+                }
+                if (event.key.code == sf::Keyboard::F3){
+                    debug = (debug + 1) % 2;
                 }
             }
             if (event.type == sf::Event::KeyReleased){
@@ -274,7 +342,6 @@ int main(){
 
         // clear window
         window.clear();
-        debugWindow.clear(sf::Color::White);
 
         // process game states
         
@@ -331,14 +398,18 @@ int main(){
             plOnWinX = width / 2 - (width / 2 - plOnScX) / zoom;
             plOnWinY = height / 2 - (height / 2 - plOnScY) / zoom;
 
-            tileStartX = (playerPos.first * tilesize * scale - plOnWinX) / (tilesize * scale);
-            tileStartY = (playerPos.second * tilesize * scale - plOnWinY) / (tilesize * scale);
-            tileStopX = tileStartX + width / (tilesize * scale);
-            tileStopY = tileStartY + height / (tilesize * scale);
+            tileStartX = (playerPos.first * tilesize * scale - plOnWinX * zoom) / (tilesize * scale);
+            tileStartY = (playerPos.second * tilesize * scale - plOnWinY * zoom) / (tilesize * scale);
+            tileStopX = tileStartX + width * zoom / (tilesize * scale);
+            tileStopY = tileStartY + height * zoom / (tilesize * scale);
 
             logger << "Player:\n\tx: " << playerPos.first << "\n\ty: " << playerPos.second << '\n';
+            logger << "\twinX: " << plOnWinX << "\n\twinY " << plOnWinY << '\n';
             logger << "Tiles:\n\tUpperLeft:\n\t\tx: " << tileStartX << "\n\t\ty: " << tileStartY << '\n';
             logger << "\tLowerRight:\n\t\tx: " << tileStopX << "\n\t\ty: " << tileStopY << '\n';
+            logger << "\tCurrent:\n\t\tx: " << playerPos.first << "\n\t\ty: " << playerPos.second << '\n';
+            logger << "\t\tBlock: " << MAP[(int)playerPos.first][(int)playerPos.second] << '\n';
+
             // shift map
             if (plOnWinX < mapshiftoffset && dX < 0 && tilesize * scale * playerPos.first > mapshiftoffset * zoom ||
                 plOnWinX > width - mapshiftoffset && dX > 0 && tilesize * scale * playerPos.first < MAPsize * tilesize * scale - mapshiftoffset * zoom){
@@ -355,10 +426,12 @@ int main(){
 
             // Draw tiles and characters
             GameScreen(window);
-            DebugMapShiftBorders(window);
-            DebugLogger(debugWindow);
+            if (debug == 1){
+                DebugMapShiftBorders(window);
+                DebugCurrentTile(window);
+                DebugLogger(window);
+            }
         }
         window.display();
-        debugWindow.display();
     }
 }

@@ -7,7 +7,7 @@ int mouseButton = -1;
 bool released;
 sf::Event g_curEvent;
 bool newEvent;
-int state = 0;
+int state = 1;
 
 struct buttonContext {
 	vec2f pos;

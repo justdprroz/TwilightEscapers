@@ -22,6 +22,3 @@ if (MSVC)
     add_executable(client source/main.cpp)
     target_link_libraries(client ${SFMLGRAPHICS} ${SFMLWINDOW} ${SFMLSYSTEM})
 endif(MSVC)
-
-
-
