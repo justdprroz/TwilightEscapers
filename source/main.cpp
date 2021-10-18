@@ -12,7 +12,7 @@ bool newEvent;
 int state = 0;
 
 const siv::PerlinNoise perlin(time(NULL));
-int const MAPsize = 1 << 10;
+int const MAPsize = 1 << 6;
 float scale = 2;
 int tilesize = 16;
 int MAP[MAPsize][MAPsize];
@@ -27,7 +27,7 @@ float velY;
 float dvx = 0, dvy = 0;
 bool Wpress, Apress, Spress, Dpress;
 int speed = 10;
-float zoom = 1.f;
+float zoom = 2.f;
 sf::View view;
 int width = 800, height = 800;
 float plOnScX = playerPos.first * tilesize * scale;
@@ -39,6 +39,7 @@ sf::Font font;
 std::stringstream logger;
 int tileStartY = 0, tileStartX = 0, tileStopY = 0, tileStopX = 0;
 bool debug = 0;
+unsigned dirtcount = 0;
 
 struct buttonContext {
     vec2f pos;
@@ -97,6 +98,13 @@ int play(){
 int settings(){
     state = 1;
     return 0;
+}
+
+int distance(int x1, int y1, int x2, int y2)
+{
+    // Calculating distance
+    return (int)std::sqrt(std::pow(x2 - x1, 2) +
+                    std::pow(y2 - y1, 2) * 1.0);
 }
 
 void loadTextures(){
@@ -190,18 +198,41 @@ void DebugLogger(sf::RenderWindow &win){
     win.draw(text);
 }
 
+void PickUpDirt(){
+    int ilx = (int)playerPos.first;
+    int ily = (int)playerPos.second;
+    for(int x = std::max(ilx, 0); x <= std::min(MAPsize, ilx + 1); x++){
+        for(int y = std::max(ily, 0); y <= std::min(MAPsize, ily + 1); y++){
+            if (MAP[x][y] == 1){
+                MAP[x][y] = 0;
+                dirtcount++;
+            }
+        }
+    }
+}
+
 void DebugCurrentTile(sf::RenderWindow &win){
     view.setSize(sf::Vector2f(width, height));
     view.setCenter(sf::Vector2f(width / 2 + dvx, height / 2 + dvy));
     view.zoom(zoom);
     win.setView(view);
+    float flx = playerPos.first;
+    float fly = playerPos.second;
+    int ilx = (int)flx;
+    int ily = (int)fly;
+    for(int x = std::max(ilx, 0); x <= std::min(MAPsize, ilx + 1); x++){
+        for(int y = std::max(ily, 0); y <= std::min(MAPsize, ily + 1); y++){
+            sf::RectangleShape cell;
+            cell.setFillColor(sf::Color(255, 0, 0, 64));
+            cell.setPosition(x * tilesize * scale, y * tilesize * scale);
+            cell.setSize({tilesize * scale, tilesize * scale});
+            win.draw(cell);
+        }
+    }
+
     sf::RectangleShape cell;
-    cell.setFillColor(sf::Color(255, 0, 0, 64));
-    cell.setPosition((int)playerPos.first * tilesize * scale, (int)playerPos.second * tilesize * scale);
-    cell.setSize({tilesize * scale, tilesize * scale});
-    win.draw(cell);
     cell.setFillColor(sf::Color(0, 0, 255, 64));
-    cell.setPosition(playerPos.first * tilesize * scale, playerPos.second * tilesize * scale);
+    cell.setPosition(flx, fly);
     cell.setSize({tilesize * scale, tilesize * scale});
     win.draw(cell);
 }
@@ -222,6 +253,8 @@ void drawTiles(sf::RenderWindow &win) {
             int curBlock = MAP[i][i1];
             sf::Sprite cell;
             cell.setTexture(textures[curBlock]);
+            int dis = distance(playerPos.first, playerPos.second, i, i1);
+            cell.setColor(sf::Color(255, 255, 255, std::max(255 - (int)(std::sqrt(dis) * 50), 0)));
             cell.setPosition(i * tilesize * scale, i1 * tilesize * scale);
             cell.setScale(sf::Vector2f(scale,scale));
             win.draw(cell);
@@ -355,6 +388,7 @@ int main(){
         }
         //  main game screen
         if (state == 2){
+            PickUpDirt();
             // move character
             // prepare variables
             velX = 0;
