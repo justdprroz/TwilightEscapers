@@ -12,26 +12,27 @@ bool newEvent;
 int state = 0;
 
 const siv::PerlinNoise perlin(time(NULL));
-int const MAPsize = 1 << 6;
+int const MAPsize = 1 << 10;
 float scale = 2;
 int tilesize = 16;
 int MAP[MAPsize][MAPsize];
 sf::Texture textures[16];
-std::pair<float, float> playerPos = {10, 15};
+std::pair<float, float> playerPos = {MAPsize / 2, MAPsize / 2};
 sf::Texture playerTextureFront;
 sf::Texture playerTextureBack;
 sf::Texture playerTexture;
 sf::Clock clockS;
 float velX;
 float velY;
-float dvx = 0, dvy = 0;
+float zoom = 4.f;
+int width = 800, height = 800;
+float dvx = width / 2 * zoom - (width / 2) + playerPos.first * tilesize * scale;
+float dvy = height / 2 * zoom - (height / 2) + playerPos.second * tilesize * scale;
+float plOnScX = playerPos.first * tilesize * scale - dvx;
+float plOnScY = playerPos.second * tilesize * scale - dvy;
 bool Wpress, Apress, Spress, Dpress;
 int speed = 10;
-float zoom = 2.f;
 sf::View view;
-int width = 800, height = 800;
-float plOnScX = playerPos.first * tilesize * scale;
-float plOnScY = playerPos.second * tilesize * scale;
 float plOnWinX = 0;
 float plOnWinY = 0;
 int mapshiftoffset = 100;
@@ -39,7 +40,8 @@ sf::Font font;
 std::stringstream logger;
 int tileStartY = 0, tileStartX = 0, tileStopY = 0, tileStopX = 0;
 bool debug = 0;
-unsigned dirtcount = 0;
+int dirtcount = 0;
+float power = 2;
 
 struct buttonContext {
     vec2f pos;
@@ -232,7 +234,7 @@ void DebugCurrentTile(sf::RenderWindow &win){
 
     sf::RectangleShape cell;
     cell.setFillColor(sf::Color(0, 0, 255, 64));
-    cell.setPosition(flx, fly);
+    cell.setPosition(flx * tilesize * scale, fly * tilesize * scale);
     cell.setSize({tilesize * scale, tilesize * scale});
     win.draw(cell);
 }
@@ -254,12 +256,30 @@ void drawTiles(sf::RenderWindow &win) {
             sf::Sprite cell;
             cell.setTexture(textures[curBlock]);
             int dis = distance(playerPos.first, playerPos.second, i, i1);
-            cell.setColor(sf::Color(255, 255, 255, std::max(255 - (int)(std::sqrt(dis) * 50), 0)));
+            if (debug == 0){
+                cell.setColor(sf::Color(255, 255, 255, std::max(255 - int(dis * 20 / power), 0)));
+            }
             cell.setPosition(i * tilesize * scale, i1 * tilesize * scale);
             cell.setScale(sf::Vector2f(scale,scale));
             win.draw(cell);
         }
     }
+}
+
+void drawHUD(sf::RenderWindow &win){
+    sf::View dv(sf::Vector2f(width / 2, height / 2),sf::Vector2f(width, height));
+    win.setView(dv);
+    sf::Text text;
+    std::string dct = "Dirt Count: ";
+    dct += std::to_string(dirtcount);
+    text.setString(dct);
+    text.setFont(font);
+    text.setPosition(0, height - 20);
+    text.setCharacterSize(16);
+    text.setFillColor(sf::Color::Black);
+    text.setOutlineColor(sf::Color::White);
+    text.setOutlineThickness(1);
+    win.draw(text);
 }
 
 void GameScreen(sf::RenderWindow &win){
@@ -269,6 +289,7 @@ void GameScreen(sf::RenderWindow &win){
     win.setView(view);
     drawTiles(win);
     drawEntities(win);
+    drawHUD(win);
 }
 
 void generateMap(){
@@ -342,6 +363,12 @@ int main(){
                 if (event.key.code == sf::Keyboard::F3){
                     debug = (debug + 1) % 2;
                 }
+                if (event.key.code == sf::Keyboard::Equal){
+                    power *= 2;
+                }
+                if (event.key.code == sf::Keyboard::Dash){
+                    power /= 2;
+                }
             }
             if (event.type == sf::Event::KeyReleased){
                 if (event.key.code == sf::Keyboard::Escape){
@@ -388,7 +415,7 @@ int main(){
         }
         //  main game screen
         if (state == 2){
-            PickUpDirt();
+            // PickUpDirt();
             // move character
             // prepare variables
             velX = 0;
@@ -437,12 +464,26 @@ int main(){
             tileStopX = tileStartX + width * zoom / (tilesize * scale);
             tileStopY = tileStartY + height * zoom / (tilesize * scale);
 
-            logger << "Player:\n\tx: " << playerPos.first << "\n\ty: " << playerPos.second << '\n';
-            logger << "\twinX: " << plOnWinX << "\n\twinY " << plOnWinY << '\n';
-            logger << "Tiles:\n\tUpperLeft:\n\t\tx: " << tileStartX << "\n\t\ty: " << tileStartY << '\n';
-            logger << "\tLowerRight:\n\t\tx: " << tileStopX << "\n\t\ty: " << tileStopY << '\n';
-            logger << "\tCurrent:\n\t\tx: " << playerPos.first << "\n\t\ty: " << playerPos.second << '\n';
-            logger << "\t\tBlock: " << MAP[(int)playerPos.first][(int)playerPos.second] << '\n';
+            // logger << "Player:\n\tx: " << playerPos.first << "\n\ty: " << playerPos.second << '\n';
+            // logger << "\twinX: " << plOnWinX << "\n\twinY " << plOnWinY << '\n';
+            // logger << "Tiles:\n\tUpperLeft:\n\t\tx: " << tileStartX << "\n\t\ty: " << tileStartY << '\n';
+            // logger << "\tLowerRight:\n\t\tx: " << tileStopX << "\n\t\ty: " << tileStopY << '\n';
+            // logger << "\tCurrent:\n\t\tx: " << playerPos.first << "\n\t\ty: " << playerPos.second << '\n';
+            // logger << "\t\tBlock: " << MAP[(int)playerPos.first][(int)playerPos.second] << '\n';
+
+            logger << "Player: " << '\n';
+            logger << "\tx: " << playerPos.first << '\n';
+            logger << "\ty: " << playerPos.second << '\n';
+            logger << "Window: " << '\n';
+            logger << "\tPlayerOnScreen: " << '\n';
+            logger << "\t\tx: " << plOnWinX << '\n';
+            logger << "\t\ty: " << plOnWinY << '\n';
+            logger << "\tIndent: " << '\n';
+            logger << "\t\tx: " << dvx << '\n';
+            logger << "\t\ty: " << dvy << '\n';
+            logger << "\tCorner: " << '\n';
+            logger << "\t\tx: " << width / 2 - (width / 2) / zoom - dvx / zoom << '\n';
+            logger << "\t\ty: " << height / 2 - (height / 2) / zoom - dvy / zoom << '\n';
 
             // shift map
             if (plOnWinX < mapshiftoffset && dX < 0 && tilesize * scale * playerPos.first > mapshiftoffset * zoom ||
