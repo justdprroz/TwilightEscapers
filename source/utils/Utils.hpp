@@ -1,4 +1,5 @@
 #pragma once
+
 #include <random>
 
 double getRandomDouble(double a, double b) 
@@ -94,4 +95,9 @@ bool inRange(T ll, T rl, T x){
 
 bool inRange(vec2f ll, vec2f rl, vec2f pos){
    return ((rl - pos) * (pos - ll) >= vec2f(0,0));
+}
+
+template <typename T>
+T distance(T x1, T y1, T x2, T y2) {
+    return (T)std::sqrt(std::pow(x2 - x1, 2) + std::pow(y2 - y1, 2) * 1.0);
 }
