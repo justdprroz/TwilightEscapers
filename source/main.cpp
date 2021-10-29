@@ -1,21 +1,22 @@
 #include <SFML/Graphics.hpp>
 #include "utils/Utils.hpp"
-#include "noise.hpp"
+#include "utils/NoiseOld.hpp"
 #include <sstream>
 #include <iostream>
 #include <logic/entity/Entity.hpp>
 #include <logic/entity/Character.hpp>
+#include <logic/world/Block.hpp>
 
 // define variables
 
 vec2f mousePos = vec2f(0, 0);
+siv::PerlinNoise perlin(15000);
 int mouseButton = -1;
 bool released;
 sf::Event g_curEvent;
 bool newEvent;
 int state = 0;
 int seed = 1800;
-const siv::PerlinNoise perlin(1800);
 int const MAPsize = 1 << 10;
 float scale = 1;
 int tilesize = 16;
@@ -24,7 +25,7 @@ sf::Texture textures[16];
 
 // Character player;
 
-std::pair<float, float> playerPos = {MAPsize / 2, MAPsize / 2};
+std::pair<float, float> playerPos = {2, 2};
 sf::Texture playerTextureFront;
 sf::Texture playerTextureBack;
 sf::Texture playerTexture;
@@ -138,6 +139,7 @@ void loadTextures(){
 void MainMenu(sf::RenderWindow &win) {
     // create view
     sf::View dv(sf::Vector2f(width / 2, height / 2),sf::Vector2f(width, height));
+    // dv.move(-100, -100);
     win.setView(dv);
 
     
@@ -277,17 +279,17 @@ void drawEntities(sf::RenderWindow &win){
 // draw tiles
 
 void drawTiles(sf::RenderWindow &win) {
+    sf::Sprite cell;
+    cell.setScale(sf::Vector2f(scale,scale));
     for(int i = std::max(tileStartX - 1, 0); i <= std::min(tileStopX + 1, MAPsize - 1); i++){
         for(int i1 = std::max(tileStartY - 1, 0); i1 <= std::min(tileStopY + 1, MAPsize - 1); i1++){
             int curBlock = MAP[i][i1];
-            sf::Sprite cell;
             cell.setTexture(textures[curBlock]);
             int dis = distance<int>(playerPos.first, playerPos.second, i, i1);
             if (debug == 0){
                 cell.setColor(sf::Color(255, 255, 255, std::max(255 - int(dis * 20 / power), 0)));
             }
             cell.setPosition(i * tilesize * scale, i1 * tilesize * scale);
-            cell.setScale(sf::Vector2f(scale,scale));
             win.draw(cell);
         }
     }
@@ -333,9 +335,9 @@ void generateMap(){
 int main(){
     // initialization
 
-    Character character;
+    Entity* Entity = new Character();
 
-    character.m_position = playerPos;    
+    // character.m_position = playerPos;    
 
     std::cout << font.loadFromFile("arial.ttf") << '\n';
 
@@ -358,8 +360,8 @@ int main(){
         sf::Event event;
         while (window.pollEvent(event))
         {
-            character.handleEvents(event);
-            handleEvent(event);
+            // character.handleEvents(event);
+            // handleEvent(event);
             g_curEvent = event;
             if (event.type == sf::Event::Closed){
                 window.close();
@@ -437,27 +439,46 @@ int main(){
         }
         //  main game screen
         if (state == 2){
-            character.move(lastframetime);
-            playerPos = character.m_position;
+            // character.move(lastframetime);
+            // playerPos = character.m_position;
 
-            // move character
-            // prepare variables
+            
+            int velX = 0;
+            int velY = 0;
+
+            // get input
+            if (Wpress){
+                playerTexture = playerTextureBack;
+                velY -= speed;
+            }
+            if (Spress){
+                playerTexture = playerTextureFront;
+                velY += speed;
+            }
+            if (Dpress){
+                velX += speed;
+            }
+            if (Apress){
+                velX -= speed;
+            }
+
+            float dX = velX * lastframetime, dY = velY * lastframetime;
 
             // move if on map
-            // if (playerPos.first + dX >= 0 && playerPos.first + dX <= MAPsize - 0.9f){
-            //     playerPos.first += dX;
-            // } else {
-            //     dX = 0;
-            // }
-            // if (playerPos.second + dY >= 0 && playerPos.second + dY <= MAPsize - 0.9f){
-            //     playerPos.second += dY;
-            // } else {
-            //     dY = 0;
-            // }
+            if (playerPos.first + dX >= 0 && playerPos.first + dX <= MAPsize - 0.9f){
+                playerPos.first += dX;
+            } else {
+                dX = 0;
+            }
+            if (playerPos.second + dY >= 0 && playerPos.second + dY <= MAPsize - 0.9f){
+                playerPos.second += dY;
+            } else {
+                dY = 0;
+            }
 
             // return to map if outside
-            // playerPos.first = std::min(std::max(0.f, playerPos.first), (float)(MAPsize - 0.9f));
-            // playerPos.second = std::min(std::max(0.f, playerPos.second), (float)(MAPsize - 0.9f));
+            playerPos.first = std::min(std::max(0.f, playerPos.first), (float)(MAPsize - 0.9f));
+            playerPos.second = std::min(std::max(0.f, playerPos.second), (float)(MAPsize - 0.9f));
 
             // get sprite coords on screen
             plOnWinX = width / 2 - (width / 2 - plOnScX) / zoom;
@@ -467,8 +488,6 @@ int main(){
             tileStartY = (playerPos.second * tilesize * scale - plOnWinY * zoom) / (tilesize * scale);
             tileStopX = tileStartX + width * zoom / (tilesize * scale);
             tileStopY = tileStartY + height * zoom / (tilesize * scale);
-
-            // some log info
 
             logger << "Player: " << '\n';
             logger << "\tx: " << playerPos.first << '\n';
@@ -485,26 +504,22 @@ int main(){
             logger << "\t\ty: " << height / 2 - (height / 2) / zoom - dvy / zoom << '\n';
             logger << "FPS: " << 1 / lastframetime << '\n';
 
-            // move map if palyer on borders
+            // shift map
+            if (plOnWinX < mapshiftoffset && dX < 0 && tilesize * scale * playerPos.first > mapshiftoffset * zoom ||
+                plOnWinX > width - mapshiftoffset && dX > 0 && tilesize * scale * playerPos.first < MAPsize * tilesize * scale - mapshiftoffset * zoom){
+                dvx += dX * tilesize * scale;
+            } else {
+                plOnScX += dX * tilesize * scale;
+            }
+            if (plOnWinY < mapshiftoffset && dY < 0 && tilesize * scale * playerPos.second > mapshiftoffset * zoom ||
+                plOnWinY > height - mapshiftoffset && dY > 0 && tilesize * scale * playerPos.second < MAPsize * tilesize * scale - mapshiftoffset * zoom){
+                dvy += dY * tilesize * scale;
+            } else {
+                plOnScY += dY * tilesize * scale;
+            }
 
-            // if (plOnWinX < mapshiftoffset && dX < 0 && tilesize * scale * playerPos.first > mapshiftoffset * zoom ||
-            //     plOnWinX > width - mapshiftoffset && dX > 0 && tilesize * scale * playerPos.first < MAPsize * tilesize * scale - mapshiftoffset * zoom){
-            //     dvx += dX * tilesize * scale;
-            // } else {
-            //     plOnScX += dX * tilesize * scale;
-            // }
-            // if (plOnWinY < mapshiftoffset && dY < 0 && tilesize * scale * playerPos.second > mapshiftoffset * zoom ||
-            //     plOnWinY > height - mapshiftoffset && dY > 0 && tilesize * scale * playerPos.second < MAPsize * tilesize * scale - mapshiftoffset * zoom){
-            //     dvy += dY * tilesize * scale;
-            // } else {
-            //     plOnScY += dY * tilesize * scale;
-            // }
-
-            // draw game screen
+            // Draw tiles and characters
             GameScreen(window);
-
-            // draw debug info if debug enabled
-
             if (debug == 1){
                 DebugMapShiftBorders(window);
                 DebugCurrentTile(window);

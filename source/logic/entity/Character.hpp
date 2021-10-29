@@ -1,8 +1,6 @@
 #pragma once
 
 #include <logic/entity/Entity.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Window/Event.hpp>
 
 #include <iostream>
 

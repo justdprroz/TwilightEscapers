@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
 #include <utils/Utils.hpp>
-
-#define protected public
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Window/Event.hpp>
+#include <string>
 
 class Base {
 public:
