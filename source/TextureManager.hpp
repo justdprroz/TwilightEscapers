@@ -8,9 +8,9 @@ class TextureManager {
 public:
     TextureManager(){
         m_textures["dirt"] = sf::Texture();
-        m_textures["dirt"].loadFromFile("textures\\main\\Tile\\dirt.png");
+        m_textures["dirt"].loadFromFile("textures/main/Tile/dirt.png");
         m_textures["stone"] = sf::Texture();
-        m_textures["stone"].loadFromFile("textures\\main\\Tile\\stone.png");
+        m_textures["stone"].loadFromFile("textures/main/Tile/stone.png");
     }
     sf::Texture* getTexture(std::string p_name){
         return &m_textures[p_name];

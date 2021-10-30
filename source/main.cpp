@@ -128,9 +128,9 @@ void loadTextures(){
     // result = textures[1].loadFromFile("textures/tiles/normal/grass.png");
     // std::cout << "Grass: " << result << '\n';
     // std::cout << "loading entities textures\n";
-    result = playerTextureFront.loadFromFile("textures\\main\\Entity\\guard.png", sf::IntRect(0, 0, 32, 32));
+    result = playerTextureFront.loadFromFile("textures/main/Entity/guard.png", sf::IntRect(0, 0, 32, 32));
     std::cout << "Guard front: " << result << '\n';
-    result = playerTextureBack.loadFromFile("textures\\main\\Entity\\guard.png", sf::IntRect(32, 0, 32, 32));
+    result = playerTextureBack.loadFromFile("textures/main/Entity/guard.png", sf::IntRect(32, 0, 32, 32));
     std::cout << "Guard back: " << result << '\n';
     playerTexture = playerTextureFront;
     // std::cout << "Textures loaded\n";
@@ -157,11 +157,11 @@ void MainMenu(sf::RenderWindow &win) {
 
     // load button textures
     sf::Texture toload;
-    toload.loadFromFile("textures\\main\\Gui\\playButton.png");
+    toload.loadFromFile("textures/main/Gui/playButton.png");
     bc.defaultTexture = sf::Texture(toload);
-    toload.loadFromFile("textures\\main\\Gui\\playButtonHover.png");
+    toload.loadFromFile("textures/main/Gui/playButtonHover.png");
     bc.hoverTexture = sf::Texture(toload);
-    toload.loadFromFile("textures\\main\\Gui\\playButtonPressed.png");
+    toload.loadFromFile("textures/main/Gui/playButtonPressed.png");
     bc.clickedTexture = sf::Texture(toload);
 
     // trigger button
@@ -175,11 +175,11 @@ void MainMenu(sf::RenderWindow &win) {
     bc.function = &settings;
     
     // load button textures
-    toload.loadFromFile("textures\\main\\Gui\\settingsButton.png");
+    toload.loadFromFile("textures/main/Gui/settingsButton.png");
     bc.defaultTexture = sf::Texture(toload);
-    toload.loadFromFile("textures\\main\\Gui\\settingsButtonHover.png");
+    toload.loadFromFile("textures/main/Gui/settingsButtonHover.png");
     bc.hoverTexture = sf::Texture(toload);
-    toload.loadFromFile("textures\\main\\Gui\\settingsButtonPressed.png");
+    toload.loadFromFile("textures/main/Gui/settingsButtonPressed.png");
     bc.clickedTexture = sf::Texture(toload);
 
     // trigger button
