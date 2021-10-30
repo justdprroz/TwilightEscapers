@@ -1,13 +1,12 @@
 #pragma once
 
-#include <logic/base/Base.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <utility>
 
-class Light : public Base {
+class Light {
 public:
     Light(){
-        m_className = "Light";
+        
     };
 protected:
     std::pair<float, float> m_position;

@@ -5,6 +5,8 @@
 #include <iostream>
 #include <logic/entity/Entity.hpp>
 #include <logic/entity/Character.hpp>
+#include <logic/world/World.hpp>
+#include <logic/world/Map.hpp>
 #include <logic/world/Block.hpp>
 
 // define variables
@@ -121,15 +123,15 @@ void loadTextures(){
     bool result;
     // std::cout << "Loading textures:\n";
     // std::cout << "Loading tiles\n";
-    result = textures[0].loadFromFile("textures/tiles/normal/stone.png");
+    // result = textures[0].loadFromFile("textures/tiles/normal/stone.png");
     // std::cout << "Stone: " << result << '\n';
-    result = textures[1].loadFromFile("textures/tiles/normal/grass.png");
+    // result = textures[1].loadFromFile("textures/tiles/normal/grass.png");
     // std::cout << "Grass: " << result << '\n';
     // std::cout << "loading entities textures\n";
-    result = playerTextureFront.loadFromFile("textures/entities/guard.png", sf::IntRect(0, 0, 32, 32));
-    // std::cout << "Guard front: " << result << '\n';
-    result = playerTextureBack.loadFromFile("textures/entities/guard.png", sf::IntRect(32, 0, 32, 32));
-    // std::cout << "Guard back: " << result << '\n';
+    result = playerTextureFront.loadFromFile("textures\\main\\Entity\\guard.png", sf::IntRect(0, 0, 32, 32));
+    std::cout << "Guard front: " << result << '\n';
+    result = playerTextureBack.loadFromFile("textures\\main\\Entity\\guard.png", sf::IntRect(32, 0, 32, 32));
+    std::cout << "Guard back: " << result << '\n';
     playerTexture = playerTextureFront;
     // std::cout << "Textures loaded\n";
 }
@@ -155,11 +157,11 @@ void MainMenu(sf::RenderWindow &win) {
 
     // load button textures
     sf::Texture toload;
-    toload.loadFromFile("textures/playButton.png");
+    toload.loadFromFile("textures\\main\\Gui\\playButton.png");
     bc.defaultTexture = sf::Texture(toload);
-    toload.loadFromFile("textures/playButtonHover.png");
+    toload.loadFromFile("textures\\main\\Gui\\playButtonHover.png");
     bc.hoverTexture = sf::Texture(toload);
-    toload.loadFromFile("textures/playButtonPressed.png");
+    toload.loadFromFile("textures\\main\\Gui\\playButtonPressed.png");
     bc.clickedTexture = sf::Texture(toload);
 
     // trigger button
@@ -173,11 +175,11 @@ void MainMenu(sf::RenderWindow &win) {
     bc.function = &settings;
     
     // load button textures
-    toload.loadFromFile("textures/settingsButton.png");
+    toload.loadFromFile("textures\\main\\Gui\\settingsButton.png");
     bc.defaultTexture = sf::Texture(toload);
-    toload.loadFromFile("textures/settingsButtonHover.png");
+    toload.loadFromFile("textures\\main\\Gui\\settingsButtonHover.png");
     bc.hoverTexture = sf::Texture(toload);
-    toload.loadFromFile("textures/settingsButtonPressed.png");
+    toload.loadFromFile("textures\\main\\Gui\\settingsButtonPressed.png");
     bc.clickedTexture = sf::Texture(toload);
 
     // trigger button
@@ -314,13 +316,13 @@ void drawHUD(sf::RenderWindow &win){
 }
 
 void GameScreen(sf::RenderWindow &win){
-    view.setSize(sf::Vector2f(width, height));
-    view.setCenter(sf::Vector2f(width / 2 + dvx, height / 2 + dvy));
-    view.zoom(zoom);
-    win.setView(view);
-    drawTiles(win);
-    drawEntities(win);
-    drawHUD(win);
+    // view.setSize(sf::Vector2f(width, height));
+    // view.setCenter(sf::Vector2f(width / 2 + dvx, height / 2 + dvy));
+    // view.zoom(zoom);
+    // win.setView(view);
+    // drawTiles(win);
+    // drawEntities(win);
+    // drawHUD(win);
 }
 
 void generateMap(){
@@ -335,15 +337,22 @@ void generateMap(){
 int main(){
     // initialization
 
-    Entity* Entity = new Character();
+    std::cout << "app started" << '\n';
 
-    // character.m_position = playerPos;    
+    World world;
+    Character player;
+
+    std::cout << playerTextureFront.getSize().x << '\n';
+    world.attachPlayer(&player);
 
     std::cout << font.loadFromFile("arial.ttf") << '\n';
 
     loadTextures();
-    generateMap();
+    // generateMap();
 
+    player.setTextureBack(playerTextureBack);
+    player.setTextureFront(playerTextureFront);
+    
     sf::RenderWindow window(sf::VideoMode(width, height), "EscapeFromTwilight", sf::Style::Default);
     window.setView(view);
 
@@ -360,8 +369,8 @@ int main(){
         sf::Event event;
         while (window.pollEvent(event))
         {
-            // character.handleEvents(event);
-            // handleEvent(event);
+            player.handleEvents(event);
+            handleEvent(event);
             g_curEvent = event;
             if (event.type == sf::Event::Closed){
                 window.close();
@@ -404,10 +413,6 @@ int main(){
                     if (state != 0){
                         state = 0;
                     }
-                    else if (state == 0){
-                        window.close();
-                        return 0;
-                    }
                 }
                 if (event.key.code == sf::Keyboard::W){
                     Wpress = false;
@@ -439,55 +444,58 @@ int main(){
         }
         //  main game screen
         if (state == 2){
+            world.step(lastframetime);
+            world.draw(window);
+
             // character.move(lastframetime);
             // playerPos = character.m_position;
 
             
-            int velX = 0;
-            int velY = 0;
+            // int velX = 0;
+            // int velY = 0;
 
             // get input
-            if (Wpress){
-                playerTexture = playerTextureBack;
-                velY -= speed;
-            }
-            if (Spress){
-                playerTexture = playerTextureFront;
-                velY += speed;
-            }
-            if (Dpress){
-                velX += speed;
-            }
-            if (Apress){
-                velX -= speed;
-            }
+            // if (Wpress){
+            //     playerTexture = playerTextureBack;
+            //     velY -= speed;
+            // }
+            // if (Spress){
+            //     playerTexture = playerTextureFront;
+            //     velY += speed;
+            // }
+            // if (Dpress){
+            //     velX += speed;
+            // }
+            // if (Apress){
+            //     velX -= speed;
+            // }
 
-            float dX = velX * lastframetime, dY = velY * lastframetime;
+            // float dX = velX * lastframetime, dY = velY * lastframetime;
 
             // move if on map
-            if (playerPos.first + dX >= 0 && playerPos.first + dX <= MAPsize - 0.9f){
-                playerPos.first += dX;
-            } else {
-                dX = 0;
-            }
-            if (playerPos.second + dY >= 0 && playerPos.second + dY <= MAPsize - 0.9f){
-                playerPos.second += dY;
-            } else {
-                dY = 0;
-            }
+            // if (playerPos.first + dX >= 0 && playerPos.first + dX <= MAPsize - 0.9f){
+            //     playerPos.first += dX;
+            // } else {
+            //     dX = 0;
+            // }
+            // if (playerPos.second + dY >= 0 && playerPos.second + dY <= MAPsize - 0.9f){
+            //     playerPos.second += dY;
+            // } else {
+            //     dY = 0;
+            // }
 
             // return to map if outside
-            playerPos.first = std::min(std::max(0.f, playerPos.first), (float)(MAPsize - 0.9f));
-            playerPos.second = std::min(std::max(0.f, playerPos.second), (float)(MAPsize - 0.9f));
+            // playerPos.first = std::min(std::max(0.f, playerPos.first), (float)(MAPsize - 0.9f));
+            // playerPos.second = std::min(std::max(0.f, playerPos.second), (float)(MAPsize - 0.9f));
 
             // get sprite coords on screen
-            plOnWinX = width / 2 - (width / 2 - plOnScX) / zoom;
-            plOnWinY = height / 2 - (height / 2 - plOnScY) / zoom;
+            // plOnWinX = width / 2 - (width / 2 - plOnScX) / zoom;
+            // plOnWinY = height / 2 - (height / 2 - plOnScY) / zoom;
 
-            tileStartX = (playerPos.first * tilesize * scale - plOnWinX * zoom) / (tilesize * scale);
-            tileStartY = (playerPos.second * tilesize * scale - plOnWinY * zoom) / (tilesize * scale);
-            tileStopX = tileStartX + width * zoom / (tilesize * scale);
-            tileStopY = tileStartY + height * zoom / (tilesize * scale);
+            // tileStartX = (playerPos.first * tilesize * scale - plOnWinX * zoom) / (tilesize * scale);
+            // tileStartY = (playerPos.second * tilesize * scale - plOnWinY * zoom) / (tilesize * scale);
+            // tileStopX = tileStartX + width * zoom / (tilesize * scale);
+            // tileStopY = tileStartY + height * zoom / (tilesize * scale);
 
             logger << "Player: " << '\n';
             logger << "\tx: " << playerPos.first << '\n';
@@ -505,18 +513,18 @@ int main(){
             logger << "FPS: " << 1 / lastframetime << '\n';
 
             // shift map
-            if (plOnWinX < mapshiftoffset && dX < 0 && tilesize * scale * playerPos.first > mapshiftoffset * zoom ||
-                plOnWinX > width - mapshiftoffset && dX > 0 && tilesize * scale * playerPos.first < MAPsize * tilesize * scale - mapshiftoffset * zoom){
-                dvx += dX * tilesize * scale;
-            } else {
-                plOnScX += dX * tilesize * scale;
-            }
-            if (plOnWinY < mapshiftoffset && dY < 0 && tilesize * scale * playerPos.second > mapshiftoffset * zoom ||
-                plOnWinY > height - mapshiftoffset && dY > 0 && tilesize * scale * playerPos.second < MAPsize * tilesize * scale - mapshiftoffset * zoom){
-                dvy += dY * tilesize * scale;
-            } else {
-                plOnScY += dY * tilesize * scale;
-            }
+            // if (plOnWinX < mapshiftoffset && dX < 0 && tilesize * scale * playerPos.first > mapshiftoffset * zoom ||
+            //     plOnWinX > width - mapshiftoffset && dX > 0 && tilesize * scale * playerPos.first < MAPsize * tilesize * scale - mapshiftoffset * zoom){
+            //     dvx += dX * tilesize * scale;
+            // } else {
+            //     plOnScX += dX * tilesize * scale;
+            // }
+            // if (plOnWinY < mapshiftoffset && dY < 0 && tilesize * scale * playerPos.second > mapshiftoffset * zoom ||
+            //     plOnWinY > height - mapshiftoffset && dY > 0 && tilesize * scale * playerPos.second < MAPsize * tilesize * scale - mapshiftoffset * zoom){
+            //     dvy += dY * tilesize * scale;
+            // } else {
+            //     plOnScY += dY * tilesize * scale;
+            // }
 
             // Draw tiles and characters
             GameScreen(window);
