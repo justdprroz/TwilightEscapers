@@ -1,7 +1,7 @@
 #pragma once
 
-#include <logic/entity/Entity.hpp>
-
+#include <Entity.hpp>
+#include <SFML/Window/Event.hpp>
 #include <iostream>
 
 class Character : public Entity {

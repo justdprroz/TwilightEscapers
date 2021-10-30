@@ -1,7 +1,7 @@
 #pragma once
 
-#include <logic/world/Block.hpp>
-#include <utils/NoiseOld.hpp>
+#include <Block.hpp>
+#include <NoiseOld.hpp>
 
 class Map {
 public:

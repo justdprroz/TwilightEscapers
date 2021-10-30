@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
-#include <logic/base/TextureManager.hpp>
+#include <TextureManager.hpp>
 
 class Block {
 public:

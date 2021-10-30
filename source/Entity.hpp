@@ -1,6 +1,9 @@
 #pragma once
 
 #include <utility>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 
 class Entity {
 public:

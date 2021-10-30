@@ -1,13 +1,13 @@
 #include <SFML/Graphics.hpp>
-#include "utils/Utils.hpp"
-#include "utils/NoiseOld.hpp"
+#include <Utils.hpp>
+#include <NoiseOld.hpp>
 #include <sstream>
 #include <iostream>
-#include <logic/entity/Entity.hpp>
-#include <logic/entity/Character.hpp>
-#include <logic/world/World.hpp>
-#include <logic/world/Map.hpp>
-#include <logic/world/Block.hpp>
+#include <Entity.hpp>
+#include <Character.hpp>
+#include <World.hpp>
+#include <Map.hpp>
+#include <Block.hpp>
 
 // define variables
 

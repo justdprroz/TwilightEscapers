@@ -1,12 +1,12 @@
 #pragma once
 
-#include <logic/world/Block.hpp>
-#include <logic/world/Light.hpp>
-#include <logic/world/Map.hpp>
-#include <logic/entity/Entity.hpp>
+#include <Block.hpp>
+#include <Light.hpp>
+#include <Map.hpp>
+#include <Entity.hpp>
 #include <vector>
 #include <SFML/Graphics/View.hpp>
-#include <logic/entity/Character.hpp>
+#include <Character.hpp>
 
 class World {
 public:
@@ -32,11 +32,11 @@ public:
     }
 protected:
     Map m_mainMap;
+    sf::View m_mainView;
+    Character* m_player;
+    int m_tileSize = 32;
     std::vector<Light> m_lightSources;
     std::vector<Entity*> m_entities;
-    Character* m_player;
-    sf::View m_mainView;
-    int m_tileSize = 32;
     std::pair<float, float> m_viewOffset;
     std::pair<int, int> m_upLeftTilePos = {0, 0};
     std::pair<int, int> m_downRightTilePos = {30, 30};
