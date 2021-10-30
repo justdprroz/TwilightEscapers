@@ -33,6 +33,9 @@ public:
             }
         }
     }
+    std::pair<int, int> getSize(){
+        return {m_sizeX, m_sizeY};
+    }
 protected:
     static const int m_sizeX = 512;
     static const int m_sizeY = 512;

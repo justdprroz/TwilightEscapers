@@ -57,18 +57,33 @@ public:
         m_downRightTilePos.first = m_upLeftTilePos.first + m_width * m_zoom / m_tileSize;
         m_downRightTilePos.second = m_upLeftTilePos.second + m_height * m_zoom / m_tileSize;
 
-        if (m_playerOnWindow.first < 100){
-            m_viewOffset.first -= 100 - m_playerOnWindow.first;
+        auto mapSize = m_mainMap.getSize();
+
+        if (m_playerOnWindow.first < m_offset && playerPos.first * m_tileSize > m_offset){
+            m_viewOffset.first -= m_offset - m_playerOnWindow.first;
         }
-        if (m_playerOnWindow.first > 700){
-            m_viewOffset.first += m_playerOnWindow.first - 700;
+        if (m_playerOnWindow.first > (m_width - m_offset) && (mapSize.first - playerPos.first) * m_tileSize > m_offset){
+            m_viewOffset.first += m_playerOnWindow.first - (m_width - m_offset);
         }
-        if (m_playerOnWindow.second < 100){
-            m_viewOffset.second -= 100 - m_playerOnWindow.second;
+        if (m_playerOnWindow.second < m_offset && playerPos.second * m_tileSize > m_offset){
+            m_viewOffset.second -= m_offset - m_playerOnWindow.second;
         }
-        if (m_playerOnWindow.second > 700){
-            m_viewOffset.second += m_playerOnWindow.second - 700;
+        if (m_playerOnWindow.second > (m_height - m_offset) && (mapSize.second - playerPos.second) * m_tileSize > m_offset){
+            m_viewOffset.second += m_playerOnWindow.second - (m_height - m_offset);
         }
+
+        // if (m_playerOnWindow.first < m_offset){
+        //     m_viewOffset.first -= m_offset - m_playerOnWindow.first;
+        // }
+        // if (m_playerOnWindow.first > (m_width - m_offset)){
+        //     m_viewOffset.first += m_playerOnWindow.first - (m_width - m_offset);
+        // }
+        // if (m_playerOnWindow.second < m_offset){
+        //     m_viewOffset.second -= m_offset - m_playerOnWindow.second;
+        // }
+        // if (m_playerOnWindow.second > (m_height - m_offset)){
+        //     m_viewOffset.second += m_playerOnWindow.second - (m_height - m_offset);
+        // }
 
         logger << "Player: " << '\n';
         logger << "\tx: " << playerPos.first << '\n';
@@ -98,6 +113,7 @@ protected:
     int m_tileSize = 32;
     int m_width = 800;
     int m_height = 800;
+    int m_offset = 100;
     sf::View m_mainView;
     float m_zoom = 1.f;
     std::vector<Light> m_lightSources;
