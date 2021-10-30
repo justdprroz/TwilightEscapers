@@ -27,8 +27,8 @@ public:
         }
     }
     void draw(sf::RenderWindow& p_win, int p_startX, int p_startY, int p_stopX, int p_stopY, const int p_tileSize){
-        for (int x = p_startX; x < p_stopX; x++){
-            for (int y = p_startX; y < p_stopX; y++){
+        for (int x = std::max(0, p_startX); x < std::min(p_stopX, m_sizeX); x++){
+            for (int y =std::max(0,  p_startY); y < std::min(p_stopY, m_sizeY); y++){
                 m_blocks[x][y]->draw(p_win, x, y, p_tileSize);
             }
         }

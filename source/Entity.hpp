@@ -40,6 +40,10 @@ public:
         p_win.draw(cell);
     }
 
+    std::pair<float, float> getPosition(){
+        return m_position;
+    }
+
 protected:
     sf::Texture m_textureFront;
     sf::Texture m_textureLeft;

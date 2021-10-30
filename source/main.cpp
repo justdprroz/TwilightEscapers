@@ -35,11 +35,11 @@ sf::Texture playerTexture;
 sf::Clock clockS;
 float zoom = 1.f;
 int width = 800, height = 800;
-float dvx = width / 2 * zoom - (width / 2) + playerPos.first * tilesize * scale;
-float dvy = height / 2 * zoom - (height / 2) + playerPos.second * tilesize * scale;
+// float dvx = width / 2 * zoom - (width / 2) + playerPos.first * tilesize * scale;
+// float dvy = height / 2 * zoom - (height / 2) + playerPos.second * tilesize * scale;
 
-float plOnScX = playerPos.first * tilesize * scale - dvx;
-float plOnScY = playerPos.second * tilesize * scale - dvy;
+// float plOnScX = playerPos.first * tilesize * scale - dvx;
+// float plOnScY = playerPos.second * tilesize * scale - dvy;
 
 bool Wpress, Apress, Spress, Dpress;
 int speed = 10;
@@ -225,7 +225,7 @@ void DebugLogger(sf::RenderWindow &win){
 
 void DebugCurrentTile(sf::RenderWindow &win){
     view.setSize(sf::Vector2f(width, height));
-    view.setCenter(sf::Vector2f(width / 2 + dvx, height / 2 + dvy));
+    // view.setCenter(sf::Vector2f(width / 2 + dvx, height / 2 + dvy));
     view.zoom(zoom);
     win.setView(view);
     float flx = playerPos.first;
@@ -381,7 +381,7 @@ int main(){
                 width = event.size.width;
                 height = event.size.height;
                 view.setSize(sf::Vector2f(width, height));
-                view.setCenter(sf::Vector2f(width / 2 + dvx, height / 2 + dvy));
+                // view.setCenter(sf::Vector2f(width / 2 + dvx, height / 2 + dvy));
                 view.zoom(zoom);
                 window.setView(view);
             }
@@ -497,19 +497,19 @@ int main(){
             // tileStopX = tileStartX + width * zoom / (tilesize * scale);
             // tileStopY = tileStartY + height * zoom / (tilesize * scale);
 
-            logger << "Player: " << '\n';
-            logger << "\tx: " << playerPos.first << '\n';
-            logger << "\ty: " << playerPos.second << '\n';
-            logger << "Window: " << '\n';
-            logger << "\tPlayerOnScreen: " << '\n';
-            logger << "\t\tx: " << plOnWinX << '\n';
-            logger << "\t\ty: " << plOnWinY << '\n';
-            logger << "\tIndent: " << '\n';
-            logger << "\t\tx: " << dvx << '\n';
-            logger << "\t\ty: " << dvy << '\n';
-            logger << "\tCorner: " << '\n';
-            logger << "\t\tx: " << width / 2 - (width / 2) / zoom - dvx / zoom << '\n';
-            logger << "\t\ty: " << height / 2 - (height / 2) / zoom - dvy / zoom << '\n';
+            // logger << "Player: " << '\n';
+            // logger << "\tx: " << playerPos.first << '\n';
+            // logger << "\ty: " << playerPos.second << '\n';
+            // logger << "Window: " << '\n';
+            // logger << "\tPlayerOnScreen: " << '\n';
+            // logger << "\t\tx: " << plOnWinX << '\n';
+            // logger << "\t\ty: " << plOnWinY << '\n';
+            // logger << "\tIndent: " << '\n';
+            // logger << "\t\tx: " << dvx << '\n';
+            // logger << "\t\ty: " << dvy << '\n';
+            // logger << "\tCorner: " << '\n';
+            // logger << "\t\tx: " << width / 2 - (width / 2) / zoom - dvx / zoom << '\n';
+            // logger << "\t\ty: " << height / 2 - (height / 2) / zoom - dvy / zoom << '\n';
             logger << "FPS: " << 1 / lastframetime << '\n';
 
             // shift map
