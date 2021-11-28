@@ -4,6 +4,10 @@ rem Generate directories
 if not exist build\ mkdir build
 if not exist tmp\ mkdir tmp
 
+rem Move dlls and assets to build directory
+xcopy dlls\* build\ /Y
+xcopy assets\ build\ /E /Y
+
 rem Go to directories
 
 cd tmp

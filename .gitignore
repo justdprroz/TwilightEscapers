@@ -1,3 +1,4 @@
 tmp
 build/*client*
 .vscode
+build
