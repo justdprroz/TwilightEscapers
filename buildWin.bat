@@ -14,7 +14,7 @@ cd tmp
 
 rem Generate cmake files
 
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+cmake ..
 
 rem Build projects
 
