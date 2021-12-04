@@ -3,3 +3,4 @@ build/*client*
 .vscode
 build
 .vs
+.idea
