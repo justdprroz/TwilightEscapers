@@ -10,6 +10,7 @@
 #include <utility>
 #include <fstream>
 #include <SFML/System/Vector2.hpp>
+#include <cstdio>
 
 class Entity {
 public:
@@ -50,12 +51,14 @@ public:
     }
     void SaveChunk(std::string p_path){
         std::ofstream chunkfile;
-        // chunkfile.open(p_path + "\\chunk_" + std::to_string(m_origin.x) + "_" + std::to_string(m_origin.y) + ".tem");
         chunkfile.open(p_path);
+        if (!chunkfile.is_open()) {
+            std::cout << "Failed open " << p_path << '\n';
+            return;
+        }
         for(int i = 0; i < 16; i++) {
             for(int j = 0; j < 16; j++) {
                 int l_id = m_blocks[i][j].GetId();
-                std::cout << "Saving block " << i << ' ' << j << ' ' << l_id << '\n';
                 chunkfile.write((char *)&l_id, sizeof(l_id));
             }
         }
@@ -64,11 +67,14 @@ public:
     void LoadChunk(std::string p_path){
         std::ifstream chunkfile;
         chunkfile.open(p_path);
+        if (!chunkfile.is_open()) {
+            std::cout << "Failed open " << p_path << '\n';
+            return;
+        }
         for(int i = 0; i < 16; i++) {
             for(int j = 0; j < 16; j++) {
                 int l_id;
                 chunkfile.read((char *)&l_id, sizeof(l_id));
-                std::cout << "reading block " << i << ' ' << j << ' ' << l_id << '\n';
                 m_blocks[i][j] = Block(l_id);
             }
         }
@@ -96,6 +102,37 @@ public:
     }
     void SetChunk(sf::Vector2i p_coords, Chunk &p_chunk){
         m_chunks[{p_coords.x, p_coords.y}] = p_chunk;
+    }
+    void LoadChunks(std::string p_path) {
+        std::ifstream chunkslist;
+        chunkslist.open(p_path + "\\chunkslist.tem");
+        if (!chunkslist.is_open()) {
+            std::cout << "Failed open " << p_path + "\\chunkslist.tem" << '\n';
+            return;
+        }
+        int lcx, lcy;
+        while(!chunkslist.eof()){
+            chunkslist.read((char*)&lcx, sizeof(lcx));
+            chunkslist.read((char*)&lcy, sizeof(lcy));
+            m_chunks[{lcx, lcy}] = Chunk();
+            m_chunks[{lcx, lcy}].LoadChunk(p_path + "\\chunk_" + std::to_string(lcx) + "_" + std::to_string(lcy) + ".tem");
+        }
+    }
+    void SaveChunks(std::string p_path) {
+        std::ofstream chunkslist;
+        chunkslist.open(p_path + "\\chunkslist.tem");
+        if (!chunkslist.is_open()) {
+            std::cout << "Failed open " << p_path + "\\chunkslist.tem" << '\n';
+            return;
+        }
+        int lcx, lcy;
+        for(std::map<std::pair<int, int>, Chunk>::iterator it = m_chunks.begin(); it != m_chunks.end(); ++it) {
+            lcx = it->first.first;
+            lcy = it->first.second;
+            chunkslist.write((char*)&lcx, sizeof(lcx));
+            chunkslist.write((char*)&lcy, sizeof(lcy));
+            it->second.SaveChunk(p_path + "\\chunk_" + std::to_string(lcx) + "_" + std::to_string(lcy) + ".tem");
+        }
     }
 private:
     std::map<std::pair<int, int>, Chunk> m_chunks;
