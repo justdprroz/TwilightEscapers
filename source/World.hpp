@@ -108,9 +108,9 @@ public:
     }
     void LoadChunks(std::string p_path) {
         std::ifstream chunkslist;
-        chunkslist.open(p_path + "\\chunkslist.tem");
+        chunkslist.open(p_path + "/chunkslist.tem");
         if (!chunkslist.is_open()) {
-            std::cout << "Failed open " << p_path + "\\chunkslist.tem" << '\n';
+            std::cout << "Failed open " << p_path + "/chunkslist.tem" << '\n';
             return;
         }
         int lcx, lcy;
@@ -118,15 +118,15 @@ public:
             chunkslist.read(reinterpret_cast<char *>(&lcx), sizeof(lcx));
             chunkslist.read(reinterpret_cast<char *>(&lcy), sizeof(lcy));
             m_chunks[{lcx, lcy}] = Chunk();
-            m_chunks[{lcx, lcy}].LoadChunk(p_path + "\\chunk_" + std::to_string(lcx) + "_" + std::to_string(lcy) + ".tem");
+            m_chunks[{lcx, lcy}].LoadChunk(p_path + "/chunk_" + std::to_string(lcx) + "_" + std::to_string(lcy) + ".tem");
         }
         chunkslist.close();
     }
     void SaveChunks(std::string p_path) {
         std::ofstream chunkslist;
-        chunkslist.open(p_path + "\\chunkslist.tem");
+        chunkslist.open(p_path + "/chunkslist.tem");
         if (!chunkslist.is_open()) {
-            std::cout << "Failed open " << p_path + "\\chunkslist.tem" << '\n';
+            std::cout << "Failed open " << p_path + "/chunkslist.tem" << '\n';
             return;
         }
         int lcx, lcy;
@@ -135,7 +135,7 @@ public:
             lcy = it->first.second;
             chunkslist.write(reinterpret_cast<char *>(&lcx), sizeof(lcx));
             chunkslist.write(reinterpret_cast<char *>(&lcy), sizeof(lcy));
-            it->second.SaveChunk(p_path + "\\chunk_" + std::to_string(lcx) + "_" + std::to_string(lcy) + ".tem");
+            it->second.SaveChunk(p_path + "/chunk_" + std::to_string(lcx) + "_" + std::to_string(lcy) + ".tem");
         }
         chunkslist.close();
     }
