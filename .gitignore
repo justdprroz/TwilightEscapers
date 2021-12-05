@@ -4,3 +4,4 @@ build/*client*
 build
 .vs
 .idea
+cmake-build-debug
