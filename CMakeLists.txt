@@ -8,7 +8,7 @@ if (UNIX)
     include_directories("source")
     add_executable(client source/main.cpp)
     find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
-    target_link_libraries(client sfml-graphics)
+    target_link_libraries(client sfml-graphics sfml-window sfml-system)
 endif (UNIX)
 
 if (MSVC)
