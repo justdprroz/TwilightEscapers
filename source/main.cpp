@@ -8,8 +8,8 @@
 #include <Utils.hpp>
 
 void Game(World &p_world, Renderer &p_renderer) {
-    for(int i = 0; i < 10; i++){
-        for(int j = 0; j < 10; j++){
+    for(int i = 0; i < 2; i++){
+        for(int j = 0; j < 2; j++){
             p_renderer.SimpleRenderChunk(*(p_world.GetChunk({i, j})));
         }
     }
@@ -100,6 +100,9 @@ void NoiseDebug(sf::RenderWindow &p_win, sf::Texture* p_ptrtext) {
 }
 
 int main() {
+    sf::Font debugfont;
+    debugfont.loadFromFile("arial.ttf");
+
     // Some variables for window
     std::string title = "EscapeFromTwilight ";
     int winWidth = 1000;
@@ -137,10 +140,16 @@ int main() {
     sf::Texture* worldMap;
     // worldMap = NoiseWorldMapAsTexture(42069, viewWidth, viewheight);
     // worldMap->copyToImage().saveToFile("noisedTexture.png");
+    sf::Text text;
+    text.setFont(debugfont);
+    text.setCharacterSize(16);
+    text.setFillColor(sf::Color::Black);
+    text.setOutlineColor(sf::Color::White);
+    text.setOutlineThickness(1);
     while (window.isOpen()) {
         float lastframetime = mainRenderClock.restart().asSeconds();
 
-        window.setTitle(title + std::to_string(1.0 / lastframetime));
+        // window.setTitle(title + std::to_string(1.0 / lastframetime));
 
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -162,6 +171,8 @@ int main() {
         window.clear(sf::Color::Black);
         // NoiseDebug(window, worldMap);
         Game(mainWorld, mainRenderer);
+        text.setString(std::to_string(1.0 / lastframetime));
+        window.draw(text);
         window.display();
     }
 
