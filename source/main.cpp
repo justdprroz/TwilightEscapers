@@ -1,4 +1,4 @@
-// Copyright 2021 JustDprroz
+// Copyright 2021-2022 JustDprroz
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -8,11 +8,15 @@
 #include <Utils.hpp>
 
 void Game(World &p_world, Renderer &p_renderer) {
-    for(int i = 0; i < 2; i++){
-        for(int j = 0; j < 2; j++){
-            p_renderer.SimpleRenderChunk(*(p_world.GetChunk({i, j})));
+    const int kx = 8;
+    const int ky = 4;
+    for(int i = -kx; i < kx; i++){
+        for(int j = -ky; j < ky; j++){
+            // p_renderer.SimpleRenderChunk(*(p_world.GetChunk({i, j})));
+            p_renderer.ChunkRenderBiome(*(p_world.GetChunk({i, j})));
         }
     }
+    p_renderer.SimpleRenderEntities(p_world.GetEntities());
 }
 
 void Terminal() {
@@ -99,15 +103,16 @@ void NoiseDebug(sf::RenderWindow &p_win, sf::Texture* p_ptrtext) {
     p_win.draw(cell);
 }
 
+
 int main() {
     sf::Font debugfont;
-    debugfont.loadFromFile("arial.ttf");
+    debugfont.loadFromFile("assets/fonts/arial.ttf");
 
     // Some variables for window
     std::string title = "EscapeFromTwilight ";
     int winWidth = 1000;
     int winHeight = 800;
-    float scale = 1;
+    float scale = 0.5;
     int viewWidth = winWidth * scale;
     int viewHeight = winHeight * scale;
 
@@ -115,20 +120,23 @@ int main() {
     sf::View mainView;
     mainView.setSize(viewWidth, viewHeight);
     mainView.setCenter(viewWidth / 2, viewHeight / 2);
-    // view.zoom();
+    mainView.setCenter(0, 0);
+    // mainView.move(-200, -200);
+    // mainView.zoom(1.0f/scale);
 
     // Window
     sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::Default);
     window.setView(mainView);
 
-    // Clock for frametime
+    // Clocks and time
     sf::Clock mainRenderClock;
     sf::Clock mainTickClock;
 
     // World
     World mainWorld;
     mainWorld.SetSeed(429);
-    mainWorld.Init();
+    mainWorld.NoiseInit();
+    // mainWorld.SummonEntity({0});
 
     // Renderer
     Renderer mainRenderer;
@@ -136,21 +144,21 @@ int main() {
     mainRenderer.AttachWindow(&window);
     mainRenderer.AttachWorld(&mainWorld);
 
-    // Noise Debug
-    sf::Texture* worldMap;
-    // worldMap = NoiseWorldMapAsTexture(42069, viewWidth, viewheight);
-    // worldMap->copyToImage().saveToFile("noisedTexture.png");
+    // Debug gui
     sf::Text text;
     text.setFont(debugfont);
     text.setCharacterSize(16);
     text.setFillColor(sf::Color::Black);
     text.setOutlineColor(sf::Color::White);
     text.setOutlineThickness(1);
+
+    // Noise Debug
+    sf::Texture* worldMap;
+    // worldMap = NoiseWorldMapAsTexture(42069, viewWidth, viewheight);
+    // worldMap->copyToImage().saveToFile("noisedTexture.png");
+
     while (window.isOpen()) {
         float lastframetime = mainRenderClock.restart().asSeconds();
-
-        // window.setTitle(title + std::to_string(1.0 / lastframetime));
-
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
@@ -163,16 +171,33 @@ int main() {
                 viewHeight = winHeight * scale;
                 mainView.setSize(sf::Vector2f(viewWidth, viewHeight));
                 mainView.setCenter(sf::Vector2f(viewWidth / 2, viewHeight / 2));
+                mainView.setCenter(0, 0);
                 window.setView(mainView);
             }
             if (event.type == sf::Event::KeyPressed){
+                if (event.key.code == sf::Keyboard::S){
+                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)){
+                        mainWorld.SaveChunks("DebugWorldSave");
+                    }
+                }
+                if (event.key.code == sf::Keyboard::Q){
+                    sf::Texture texture;
+                    texture.create(window.getSize().x, window.getSize().y);
+                    texture.update(window);
+                    texture.copyToImage().saveToFile("mapScreenshot.png");
+                }
             }
         }
+        window.setView(mainView);
         window.clear(sf::Color::Black);
-        // NoiseDebug(window, worldMap);
+
         Game(mainWorld, mainRenderer);
+
         text.setString(std::to_string(1.0 / lastframetime));
+
+        window.setView(sf::View());
         window.draw(text);
+
         window.display();
     }
 

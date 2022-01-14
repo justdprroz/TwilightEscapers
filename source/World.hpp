@@ -1,4 +1,5 @@
-// Copyright 2021 JustDprroz
+// Copyright 2021-2022 JustDprroz
+
 #ifndef SOURCE_WORLD_HPP_
 #define SOURCE_WORLD_HPP_
 
@@ -17,29 +18,67 @@
 
 class Entity {
 public:
+    // Constructors and Inizializers
+    Entity();
+    Entity(int p_id) : m_id(p_id) {
+        std::cout << m_id << '\n';
+    };
+    // Position and state managment
     void SetPosition(sf::Vector2f p_pos) {
         m_position = p_pos;
     }
     sf::Vector2f GetPosition() {
         return m_position;
     }
-
-private:
+    int GetId(){
+        return m_id;
+    }
+    // Update
+    void Update(float p_tickTime) {
+    }
+protected:
     sf::Vector2f m_position;
-};
-
-struct Block {
     int m_id;
 };
 
-struct Chunk {
+class Character : public Entity {
+public:
+    Character() : Entity(0) {};
+    void HandleInput(sf::Event){
+        // TODO:
+    }
+    std::string GetName() {
+        return m_name;
+    }
+private:
+    std::string m_name;
+};
+
+class Block {
+public:
+    Block() : m_id(0), m_biome(0){};
+    Block(int p_id) : m_id(p_id), m_biome(0) {};
+    Block(int p_id, int p_biome) : m_id(p_id), m_biome(p_biome) {};
+    int GetId(){
+        return m_id;
+    }
+    int GetBiome(){
+        return m_biome;
+    }
+private:
+    int m_id;
+    int m_biome;
+};
+
+class Chunk {
 public:
     Chunk() = default;
+    Chunk(sf::Vector2i p_origin) : m_origin(p_origin) {};
     // Blocks
-    Block* GetBlock(sf::Vector2i p_pos) {
-        return &m_blocks[p_pos.x][p_pos.y];
+    Block GetBlock(sf::Vector2i p_pos) {
+        return m_blocks[p_pos.x][p_pos.y];
     }
-    void SetBlock(sf::Vector2i p_pos, const Block &p_block) {
+    void PlaceBlock(sf::Vector2i p_pos, const Block &p_block) {
         m_blocks[p_pos.x][p_pos.y] = p_block;
     }
     sf::Vector2i getOrigin() {
@@ -55,7 +94,7 @@ public:
         }
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                int l_id = m_blocks[i][j].m_id;
+                int l_id = m_blocks[i][j].GetId();
                 chunkfile.write(reinterpret_cast<char *>(&l_id), sizeof(l_id));
             }
         }
@@ -77,42 +116,56 @@ public:
         }
         chunkfile.close();
     }
+    void SetGenerated(){
+        m_generated = true;
+    };
+    void SetGenerated(bool p_state){
+        m_generated = p_state;
+    };
+    bool IsGenerated(){
+        return m_generated;
+    }
+private:
     sf::Vector2i m_origin;
+    bool m_generated = false;
     std::array<std::array<Block, 16>, 16> m_blocks;
 };
+
 class World {
 public:
-    World() = default;
-    void Init() {
-        m_noise.SetSeed(m_seed);
-        m_noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
-        m_noise.SetFrequency(0.02);
-        m_noise.SetFractalType(FastNoiseLite::FractalType_FBm);
-        m_noise.SetFractalOctaves(3);
-    }
+    // Constructors
+    World(){};
+    World(int p_seed) : m_seed{p_seed}{};
     void SetSeed(int p_seed) {
         m_seed = p_seed;
     }
-    Block* GetBlock(sf::Vector2i p_pos) {
-        return GetChunk({p_pos.x / 16, p_pos.y / 16})->GetBlock({p_pos.x % 16, p_pos.y % 16});
+    std::vector<Entity>& GetEntities() {
+        return m_entities;
     }
-    void SetBlock(sf::Vector2i p_pos, const Block &p_block) {
-        m_chunks[{p_pos.x / 16, p_pos.y / 16}].SetBlock({p_pos.x % 16, p_pos.y % 16}, p_block);
+    void SummonEntity(Entity p_entity){
+        m_entities.push_back(p_entity);
     }
+    // Blocks FIXME: math shit
+    Block GetBlock(sf::Vector2i p_pos) {
+        return m_chunks[{div<int>(p_pos.x, 16),div<int>(p_pos.y, 16)}].GetBlock({mod<int>(p_pos.x, 16),mod<int>(p_pos.y, 16)});
+    }
+    void PlaceBlock(sf::Vector2i p_pos, const Block &p_block) {
+        m_chunks[{div<int>(p_pos.x, 16),div<int>(p_pos.y, 16)}].PlaceBlock({mod<int>(p_pos.x, 16),mod<int>(p_pos.y, 16)}, p_block);
+    }
+    // Chunks
     bool IsChunkExist(sf::Vector2i p_coords) {
         return m_chunks.find({p_coords.x, p_coords.y}) != m_chunks.end();
     }
     Chunk* GetChunk(sf::Vector2i p_coords) {
         if (!IsChunkExist({p_coords.x, p_coords.y})) {
-            SetChunk(p_coords);
+            PlaceChunk(p_coords);
             GenerateChunk(p_coords);
         }
         return &m_chunks[{p_coords.x, p_coords.y}];
     }
-    void SetChunk(sf::Vector2i p_coords) {
+    void PlaceChunk(sf::Vector2i p_coords) {
         if (IsChunkExist(p_coords)) return;
-        m_chunks[{p_coords.x, p_coords.y}] = Chunk();
-        m_chunks[{p_coords.x, p_coords.y}].m_origin = p_coords;
+        m_chunks[{p_coords.x, p_coords.y}] = Chunk(p_coords);
     }
     void LoadChunks(std::string p_path) {
         std::ifstream chunkslist;
@@ -125,9 +178,9 @@ public:
         while (!chunkslist.eof()) {
             chunkslist.read(reinterpret_cast<char *>(&lcx), sizeof(lcx));
             chunkslist.read(reinterpret_cast<char *>(&lcy), sizeof(lcy));
-            m_chunks[{lcx, lcy}] = Chunk();
-            m_chunks[{lcx, lcy}].m_origin = {lcx, lcy};
+            m_chunks[{lcx, lcy}] = Chunk({lcx, lcy});
             m_chunks[{lcx, lcy}].LoadChunk(p_path + "/chunk_" + std::to_string(lcx) + "_" + std::to_string(lcy) + ".tem");
+            // m_chunks[{lcx, lcy}].generated = true;
         }
         chunkslist.close();
     }
@@ -149,21 +202,38 @@ public:
         chunkslist.close();
     }
     void GenerateChunk(sf::Vector2i p_coords) {
-        m_chunks[{p_coords.x, p_coords.y}].m_origin = p_coords;
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                float noiseValue = m_noise.GetNoise(static_cast<float>(i + p_coords.x * 16), static_cast<float>(j + p_coords.y * 16));
-                int blockId = static_cast<int>(LinearInterpolation(noiseValue, -1.f, 1.0f, 0.0f, 2.0f));
-                m_chunks[{p_coords.x, p_coords.y}].m_blocks[i][j] = {blockId};
+                float noiseHeightValue = m_noiseHeight.GetNoise(static_cast<float>(i + p_coords.x * 16), static_cast<float>(j + p_coords.y * 16));
+                int blockId = static_cast<int>(LinearInterpolation(noiseHeightValue, -1.f, 1.0f, 0.0f, 2.0f));
+                float noiseBiomeValue = m_noiseBiome.GetNoise(static_cast<float>(i + p_coords.x * 16), static_cast<float>(j + p_coords.y * 16));
+                int biomeId = static_cast<int>(LinearInterpolation(noiseBiomeValue, -1.f, 1.0f, 0.0f, 3.0f));
+                m_chunks[{p_coords.x, p_coords.y}].PlaceBlock({i, j}, {blockId, biomeId});
             }
         }
+        m_chunks[{p_coords.x, p_coords.y}].SetGenerated();
     }
+    void NoiseInit() {
+        m_noiseHeight.SetSeed(m_seed);
+        m_noiseHeight.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
+        m_noiseHeight.SetFrequency(0.02);
+        m_noiseHeight.SetFractalType(FastNoiseLite::FractalType_FBm);
+        m_noiseHeight.SetFractalOctaves(3);
 
+        m_noiseBiome.SetSeed(m_seed);
+        m_noiseBiome.SetNoiseType(FastNoiseLite::NoiseType_Cellular);
+        m_noiseBiome.SetFrequency(0.02);
+        m_noiseBiome.SetCellularDistanceFunction(FastNoiseLite::CellularDistanceFunction_Hybrid);
+        m_noiseBiome.SetCellularReturnType(FastNoiseLite::CellularReturnType_CellValue);
+    }
 private:
-    FastNoiseLite m_noise;
-    int m_seed;
+    // Methods
+    // Members
     std::map<std::pair<int, int>, Chunk> m_chunks;
     std::vector<Entity> m_entities;
+    FastNoiseLite m_noiseHeight;
+    FastNoiseLite m_noiseBiome;
+    int m_seed;
 };
 
 #endif  // SOURCE_WORLD_HPP_

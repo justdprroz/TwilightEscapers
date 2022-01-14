@@ -2,6 +2,7 @@
 #include <external/FastNoiseLite.h>
 #include <iostream>
 #include <cmath>
+
 class Application
 {
 public:
@@ -11,13 +12,15 @@ public:
     {
         m_mainView.setSize(m_winWidth, m_winHeight);
         m_mainView.setCenter(m_winWidth / 2, m_winHeight / 2);
+
         sf::ContextSettings settings;
         settings.antialiasingLevel = 16;
         m_window.create(sf::VideoMode(800, 800), "hello", sf::Style::Default, settings);
+        m_window.setMouseCursorVisible(false);
         m_layer = new sf::RenderTexture();
         m_layer->create(800, 800, settings);
         flashlight_s = std::sqrt(800*800*2);
-        sf::RenderTexture* mm_l;
+        sf::RenderTexture * mm_l; 
         std::cout << flashlight_s << '\n';
         m_flashlightTexture.create(400, 400, settings);
         generateSpot(m_darkness);
@@ -61,20 +64,27 @@ public:
         };
         // m_flashlightTexture.draw(line, 4, sf::Lines);
         m_flashlightTexture.display();
-        m_flashlightTexture.getTexture().copyToImage().saveToFile("flashlightrender.png");
+        m_flashlightTexture.getTexture().copyToImage().saveToFile("dumpfiles/flashlightrender.png");
     }
 
     void run()
     {
         sf::Font debugfont;
-        debugfont.loadFromFile("arial.ttf");
+        debugfont.loadFromFile("assets/fonts/CascadiaCode.ttf");
         sf::Text text;
         text.setFont(debugfont);
         text.setCharacterSize(16);
-        text.setFillColor(sf::Color::Black);
-        text.setOutlineColor(sf::Color::White);
-        text.setOutlineThickness(1);
+        text.setFillColor(sf::Color::White);
+        // text.setOutlineColor(sf::Color::White);
+        // text.setOutlineThickness(1);
         sf::Clock mainRenderClock;
+        sf::Sprite cursor;
+        sf::Texture cursortexture;
+        cursortexture.loadFromFile("assets/textures/gui/cursors.png");
+        cursor.setTexture(cursortexture);
+        cursor.setTextureRect(sf::IntRect(0, 0, 16, 16));
+        cursor.setOrigin(0, 0);
+        cursor.setScale({2, 2});
         while (m_window.isOpen()){   
             float lastframetime = mainRenderClock.restart().asSeconds();
             for (auto event = sf::Event{}; m_window.pollEvent(event);){
@@ -129,7 +139,8 @@ public:
                         m_pressed[3] = false;
                     }
                     if (event.key.code == sf::Keyboard::Q){
-                        m_layer->getTexture().copyToImage().saveToFile("LastestRenderMask.png");
+                        m_layer->getTexture().copyToImage().saveToFile("dumpfiles/LastestRenderMask.png");
+                        cursor.getTexture()->copyToImage().saveToFile("dumpfiles/cursor.png");
                     }
                 }
             }
@@ -138,7 +149,9 @@ public:
             // rotate flashlight
             sf::Vector2f m_center = m_flashlight.getPosition();
             m_position = m_window.mapPixelToCoords(sf::Mouse::getPosition(m_window));
-            
+
+            cursor.setPosition(m_position);
+
             float nx = m_position.x - m_center.x;
             float ny = m_center.y - m_position.y;
             float angle = atan2(nx, ny);
@@ -150,8 +163,8 @@ public:
             player.setPosition(m_center);
 
             // Clear
-            m_layer->clear(sf::Color(0, 0, 0, 240));
-            m_window.clear(sf::Color::Blue);
+            m_layer->clear(sf::Color(0, 0, 0, 255));
+            m_window.clear(sf::Color::White);
             
             // Draw anything
             // m_layer->draw(circle, sf::BlendNone);
@@ -162,20 +175,25 @@ public:
             sf::CircleShape playershadow(player);
             playershadow.setTexture(&m_flashlightTexture.getTexture());
             playershadow.setTextureRect(sf::IntRect(370, 190, 20, 20));
+            playershadow.setRotation(angle * 57.2958f + 90);
 
             m_window.draw(m_rectangle);
             m_window.draw(player);
 
             // Draw with light
             m_layer->draw(m_flashlight, sf::BlendNone);
-            m_layer->draw(shadow, sf::BlendNone);
-            m_layer->draw(playershadow, sf::BlendNone);
+            // m_layer->draw(shadow, sf::BlendNone);
+            // m_layer->draw(playershadow, sf::BlendNone);
             m_layer->display();
             m_window.draw(m_sprite);
+            m_window.draw(cursor);
 
-            text.setString(std::to_string(1.0 / lastframetime) + '\n' + std::to_string(m_darkness));
+            text.setString(std::to_string(1.0 / lastframetime) + "\n\n" + std::to_string(m_darkness));
+            sf::FloatRect backgroundRect = text.getLocalBounds();
+            sf::RectangleShape background(sf::Vector2f(backgroundRect.width + 5, backgroundRect.height + 5));
+            background.setFillColor(sf::Color(0, 0, 0, 128));
+            m_window.draw(background, text.getTransform());
             m_window.draw(text);
-
             m_window.display();
         }
     }
