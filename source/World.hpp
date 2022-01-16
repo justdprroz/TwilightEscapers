@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 #include <cstdio>
 #include <string>
 #include <array>
@@ -129,6 +130,8 @@ private:
     sf::Vector2i m_origin;
     bool m_generated = false;
     std::array<std::array<Block, 16>, 16> m_blocks;
+    friend class RenderChunk;
+    friend class Renderer;
 };
 
 class World {
@@ -234,6 +237,7 @@ private:
     FastNoiseLite m_noiseHeight;
     FastNoiseLite m_noiseBiome;
     int m_seed;
+    friend class RenderWorld;
 };
 
 #endif  // SOURCE_WORLD_HPP_

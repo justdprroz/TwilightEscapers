@@ -7,12 +7,12 @@
 #include <utility>
 #include <Utils.hpp>
 
-void Game(World &p_world, Renderer &p_renderer) {
-    const int kx = 8;
-    const int ky = 4;
+const int kx = 32;
+const int ky = 16;
+
+void Game(World &p_world, Renderer &p_renderer, sf::RenderWindow& p_win) {
     for(int i = -kx; i < kx; i++){
         for(int j = -ky; j < ky; j++){
-            // p_renderer.SimpleRenderChunk(*(p_world.GetChunk({i, j})));
             p_renderer.ChunkRenderBiome(*(p_world.GetChunk({i, j})));
         }
     }
@@ -54,7 +54,7 @@ sf::Texture* NoiseWorldMapAsTexture(int p_seed, int p_width, int p_height) {
     texturePtr->create(p_width, p_height);
     image.create(p_width, p_height);
     // create noise gen
-    float freq = 0.005;
+    float freq = 0.005; 
 
     FastNoiseLite noise;
     noise.SetSeed(p_seed);
@@ -105,6 +105,8 @@ void NoiseDebug(sf::RenderWindow &p_win, sf::Texture* p_ptrtext) {
 
 
 int main() {
+    std::cout << sizeof(sf::RenderStates) << '\n';
+
     sf::Font debugfont;
     debugfont.loadFromFile("assets/fonts/arial.ttf");
 
@@ -112,7 +114,7 @@ int main() {
     std::string title = "EscapeFromTwilight ";
     int winWidth = 1000;
     int winHeight = 800;
-    float scale = 0.5;
+    float scale = 16;
     int viewWidth = winWidth * scale;
     int viewHeight = winHeight * scale;
 
@@ -136,6 +138,14 @@ int main() {
     World mainWorld;
     mainWorld.SetSeed(429);
     mainWorld.NoiseInit();
+
+    for(int i = -kx; i < kx; i++){
+        for(int j = -ky; j < ky; j++){
+            mainWorld.PlaceChunk({i, j});
+            mainWorld.GenerateChunk({i, j});
+        }
+    }
+
     // mainWorld.SummonEntity({0});
 
     // Renderer
@@ -144,6 +154,9 @@ int main() {
     mainRenderer.AttachWindow(&window);
     mainRenderer.AttachWorld(&mainWorld);
 
+    RenderWorld mainRenderWorld;
+    mainRenderWorld.Update(mainWorld, mainRenderer);
+
     // Debug gui
     sf::Text text;
     text.setFont(debugfont);
@@ -151,11 +164,6 @@ int main() {
     text.setFillColor(sf::Color::Black);
     text.setOutlineColor(sf::Color::White);
     text.setOutlineThickness(1);
-
-    // Noise Debug
-    sf::Texture* worldMap;
-    // worldMap = NoiseWorldMapAsTexture(42069, viewWidth, viewheight);
-    // worldMap->copyToImage().saveToFile("noisedTexture.png");
 
     while (window.isOpen()) {
         float lastframetime = mainRenderClock.restart().asSeconds();
@@ -191,7 +199,8 @@ int main() {
         window.setView(mainView);
         window.clear(sf::Color::Black);
 
-        Game(mainWorld, mainRenderer);
+        // Game(mainWorld, mainRenderer, window);
+        window.draw(mainRenderWorld);
 
         text.setString(std::to_string(1.0 / lastframetime));
 
@@ -199,6 +208,7 @@ int main() {
         window.draw(text);
 
         window.display();
+        // std::cin.get();
     }
 
     // mainWorld.SaveChunks("World1");
