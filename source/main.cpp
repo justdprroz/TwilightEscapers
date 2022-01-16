@@ -7,12 +7,15 @@
 #include <utility>
 #include <Utils.hpp>
 
-const int kx = 32;
-const int ky = 16;
+const int kminx = -32;
+const int kmaxx = 32;
+
+const int kminy = -16;
+const int kmaxy = 16;
 
 void Game(World &p_world, Renderer &p_renderer, sf::RenderWindow& p_win) {
-    for(int i = -kx; i < kx; i++){
-        for(int j = -ky; j < ky; j++){
+    for(int i = kminx; i < kmaxx; i++){
+        for(int j = kminy; j < kmaxy; j++){
             p_renderer.ChunkRenderBiome(*(p_world.GetChunk({i, j})));
         }
     }
@@ -105,8 +108,6 @@ void NoiseDebug(sf::RenderWindow &p_win, sf::Texture* p_ptrtext) {
 
 
 int main() {
-    std::cout << sizeof(sf::RenderStates) << '\n';
-
     sf::Font debugfont;
     debugfont.loadFromFile("assets/fonts/arial.ttf");
 
@@ -114,20 +115,15 @@ int main() {
     std::string title = "EscapeFromTwilight ";
     int winWidth = 1000;
     int winHeight = 800;
-    float scale = 16;
+    float scale = 1;
     int viewWidth = winWidth * scale;
     int viewHeight = winHeight * scale;
 
-    // View
+    // View & Window
     sf::View mainView;
-    mainView.setSize(viewWidth, viewHeight);
-    mainView.setCenter(viewWidth / 2, viewHeight / 2);
-    mainView.setCenter(0, 0);
-    // mainView.move(-200, -200);
-    // mainView.zoom(1.0f/scale);
-
-    // Window
     sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::Default);
+    mainView.setSize(viewWidth, viewHeight);
+    mainView.setCenter(0, 0);
     window.setView(mainView);
 
     // Clocks and time
@@ -139,8 +135,8 @@ int main() {
     mainWorld.SetSeed(429);
     mainWorld.NoiseInit();
 
-    for(int i = -kx; i < kx; i++){
-        for(int j = -ky; j < ky; j++){
+    for(int i = kminx; i < kmaxx; i++){
+        for(int j = kminy; j < kmaxy; j++){
             mainWorld.PlaceChunk({i, j});
             mainWorld.GenerateChunk({i, j});
         }
@@ -156,6 +152,8 @@ int main() {
 
     RenderWorld mainRenderWorld;
     mainRenderWorld.Update(mainWorld, mainRenderer);
+
+    int rendermode = 0;
 
     // Debug gui
     sf::Text text;
@@ -178,7 +176,6 @@ int main() {
                 viewWidth = winWidth * scale;
                 viewHeight = winHeight * scale;
                 mainView.setSize(sf::Vector2f(viewWidth, viewHeight));
-                mainView.setCenter(sf::Vector2f(viewWidth / 2, viewHeight / 2));
                 mainView.setCenter(0, 0);
                 window.setView(mainView);
             }
@@ -194,15 +191,22 @@ int main() {
                     texture.update(window);
                     texture.copyToImage().saveToFile("mapScreenshot.png");
                 }
+                if (event.key.code == sf::Keyboard::R){
+                    rendermode++;
+                    rendermode %= 2;
+                }
             }
         }
         window.setView(mainView);
         window.clear(sf::Color::Black);
 
-        // Game(mainWorld, mainRenderer, window);
-        window.draw(mainRenderWorld);
+        if (rendermode == 0){
+            window.draw(mainRenderWorld);
+        } else {
+            Game(mainWorld, mainRenderer, window);
+        }
 
-        text.setString(std::to_string(1.0 / lastframetime));
+        text.setString(std::to_string(1.0 / lastframetime) + '\n' + std::to_string(rendermode));
 
         window.setView(sf::View());
         window.draw(text);

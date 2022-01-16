@@ -20,8 +20,8 @@ private:
     void LoadBlockTextures();
     void LoadEntityTextures();
     void LoadTilesetsBlocks();
-    sf::Texture m_texturesBlocks[2];
     sf::Texture m_tilesetsBlocks[3];
+    sf::Texture m_blockTileset;
     sf::Texture m_texturesEntities[2];
     sf::RenderWindow* m_windowPtr;
     World* m_currentWorld;
