@@ -7,41 +7,35 @@
 #include <World.hpp>
 #include <Utils.hpp>
 
-class Renderer {
+const int kTextureSize = 16;
+
+class TextureManager {
 public:
-    void AttachWindow(sf::RenderWindow *p_win);
-    void AttachWorld(World *p_world);
-    void LoadTextures();
-    void SimpleRenderChunk(Chunk& p_chunk);
-    void ChunkRenderBiome(Chunk& p_chunk);
-    void SimpleRenderEntities(std::vector<Entity>& p_entities);
-    sf::Texture* GetTileset();
+    TextureManager() = default;
+    TextureManager(std::string assets_path);
+    void SetAssetsPath(std::string path);
+    sf::Texture* GetBlockTilesetPtr();
 private:
-    void LoadBlockTextures();
-    void LoadEntityTextures();
-    void LoadTilesetsBlocks();
-    sf::Texture m_tilesetsBlocks[3];
-    sf::Texture m_blockTileset;
-    sf::Texture m_texturesEntities[2];
-    sf::RenderWindow* m_windowPtr;
-    World* m_currentWorld;
+    void LoadBlockTileset();
+    std::string assets_path_;
+    sf::Texture block_tileset_;
 };
 
 class RenderChunk : public sf::Drawable, public sf::Transformable {
 public:
-    void Update(Chunk& p_chunk, Renderer& p_renderer);
+    void Update(Chunk& chunk, TextureManager& texture_manager);
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 private:
-    sf::VertexArray m_vertices;
-    sf::Texture* m_tileset;
+    sf::VertexArray vertices_;
+    sf::Texture* tileset_ptr_;
 };
 
 class RenderWorld : public sf::Drawable, public sf::Transformable {
 public:
-    void Update(World& p_world, Renderer& p_renderer);
+    void Update(World& world, TextureManager& texture_manager);
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 private:
-    std::map<std::pair<int, int>, RenderChunk> m_chunks;
+    std::map<std::pair<int, int>, RenderChunk> render_chunks_;
 };
 
 #endif

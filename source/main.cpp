@@ -7,20 +7,7 @@
 #include <utility>
 #include <Utils.hpp>
 
-const int kminx = -32;
-const int kmaxx = 32;
-
-const int kminy = -16;
-const int kmaxy = 16;
-
-void Game(World &p_world, Renderer &p_renderer, sf::RenderWindow& p_win) {
-    for(int i = kminx; i < kmaxx; i++){
-        for(int j = kminy; j < kmaxy; j++){
-            p_renderer.ChunkRenderBiome(*(p_world.GetChunk({i, j})));
-        }
-    }
-    p_renderer.SimpleRenderEntities(p_world.GetEntities());
-}
+const int render_distance = 4;
 
 void Terminal() {
 
@@ -131,27 +118,25 @@ int main() {
     sf::Clock mainTickClock;
 
     // World
-    World mainWorld;
-    mainWorld.SetSeed(429);
-    mainWorld.NoiseInit();
+    World main_world;
+    main_world.SetSeed(429);
+    main_world.NoiseInit();
 
-    for(int i = kminx; i < kmaxx; i++){
-        for(int j = kminy; j < kmaxy; j++){
-            mainWorld.PlaceChunk({i, j});
-            mainWorld.GenerateChunk({i, j});
+    for(int i = -render_distance; i < render_distance; i++){
+        for(int j = -render_distance; j < render_distance; j++){
+            main_world.PlaceChunk({i, j});
+            main_world.GenerateChunk({i, j});
         }
     }
 
     // mainWorld.SummonEntity({0});
 
-    // Renderer
-    Renderer mainRenderer;
-    mainRenderer.LoadTextures();
-    mainRenderer.AttachWindow(&window);
-    mainRenderer.AttachWorld(&mainWorld);
+    // Rendering
+
+    TextureManager texture_manager("assets");
 
     RenderWorld mainRenderWorld;
-    mainRenderWorld.Update(mainWorld, mainRenderer);
+    mainRenderWorld.Update(main_world, texture_manager);
 
     int rendermode = 0;
 
@@ -182,7 +167,7 @@ int main() {
             if (event.type == sf::Event::KeyPressed){
                 if (event.key.code == sf::Keyboard::S){
                     if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)){
-                        mainWorld.SaveChunks("DebugWorldSave");
+                        main_world.SaveChunks("DebugWorldSave");
                     }
                 }
                 if (event.key.code == sf::Keyboard::Q){
@@ -200,17 +185,12 @@ int main() {
         window.setView(mainView);
         window.clear(sf::Color::Black);
 
-        if (rendermode == 0){
-            window.draw(mainRenderWorld);
-        } else {
-            Game(mainWorld, mainRenderer, window);
-        }
+        window.draw(mainRenderWorld);
 
         text.setString(std::to_string(1.0 / lastframetime) + '\n' + std::to_string(rendermode));
 
         window.setView(sf::View());
         window.draw(text);
-
         window.display();
         // std::cin.get();
     }

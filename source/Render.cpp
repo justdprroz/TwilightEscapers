@@ -1,86 +1,39 @@
+// Copyright 2021-2022 JustDprroz
+
 #include "Render.hpp"
 
-void Renderer::AttachWindow(sf::RenderWindow *p_win){
-    m_windowPtr = p_win;
+TextureManager::TextureManager(std::string assets_path) {
+    assets_path_ = assets_path;
+    LoadBlockTileset();
 }
 
-void Renderer::AttachWorld(World *p_world) {
-    m_currentWorld = p_world;
+void TextureManager::SetAssetsPath(std::string path) {
+    assets_path_ = path;
 }
 
-void Renderer::LoadTextures() {
-    LoadBlockTextures();
-    LoadEntityTextures();
-    LoadTilesetsBlocks();
+void TextureManager::LoadBlockTileset() {
+    block_tileset_.loadFromFile(assets_path_ + "/textures/tiles/tileset.png");
 }
 
-void Renderer::ChunkRenderBiome(Chunk& p_chunk) {
-    if (!p_chunk.IsGenerated()) return;
-    sf::Vector2i origin = p_chunk.getOrigin();
-    for(int i = 0; i < 16; i++){
-        for(int j = 0; j < 16; j++){
-            int g_x = origin.x * 16 + i;
-            int g_y = origin.y * 16 + j;
-            int id = p_chunk.m_blocks[i][j].GetId();
-            int biome = p_chunk.m_blocks[i][j].GetBiome();
-            sf::Sprite cell;
-            cell.setTexture(m_tilesetsBlocks[biome]);
-            cell.setPosition(g_x * 16, g_y * 16);
-            if (id == 0) {
-                cell.setTextureRect(sf::IntRect(4 * 16, 0 + mod((g_y + g_x * 2), 4) * 16, 16, 16));
-            }
-            if (id == 1) {
-                cell.setTextureRect(sf::IntRect(0, 1 * 16 + mod((g_y + g_x * 2), 4) * 16, 16, 16));
-            }
-            m_windowPtr->draw(cell);
-        }
-    }
+sf::Texture* TextureManager::GetBlockTilesetPtr() {
+    return &block_tileset_;
 }
 
-void Renderer::SimpleRenderEntities(std::vector<Entity>& p_entities) {
-    for(Entity it : p_entities) {
-        sf::Sprite cell;
-        int id = it.GetId();
-        cell.setTexture(m_texturesEntities[id]);
-        cell.setTextureRect(sf::IntRect(0, 0, 16, 16));
-        sf::Vector2f pos = it.GetPosition();
-        cell.setPosition(pos.x * 16, pos.y * 16);
-        m_windowPtr->draw(cell);
-    }
-}
-
-void Renderer::LoadBlockTextures() {
-}
-void Renderer::LoadEntityTextures() {
-    m_texturesEntities[0].loadFromFile("assets/textures/entity/office.png");
-    m_texturesEntities[1].loadFromFile("assets/textures/entity/guard.png");
-}
-void Renderer::LoadTilesetsBlocks() {
-    m_tilesetsBlocks[0].loadFromFile("assets/textures/tile/tileset_0.png");
-    m_tilesetsBlocks[1].loadFromFile("assets/textures/tile/tileset_1.png");
-    m_tilesetsBlocks[2].loadFromFile("assets/textures/tile/tileset_2.png");
-    m_blockTileset.loadFromFile("assets/textures/tile/tileset.png");
-}
-
-sf::Texture* Renderer::GetTileset(){
-    return &m_blockTileset;
-}
-
-void RenderChunk::Update(Chunk& p_chunk, Renderer& p_renderer) {
-    m_vertices.setPrimitiveType(sf::Quads);
-    m_vertices.resize(16 * 16 * 4);
-    m_tileset = p_renderer.GetTileset();
-    sf::Vector2i p_origin = p_chunk.getOrigin();
-    for (int i = 0; i < 16; i++) {
-        for (int j = 0; j < 16; j++) {
-            sf::Vertex* quad = &m_vertices[(i + j * 16) * 4];
+void RenderChunk::Update(Chunk& chunk, TextureManager& texture_manager) {
+    vertices_.setPrimitiveType(sf::Quads);
+    vertices_.resize(kChunkSize * kChunkSize * 4);
+    tileset_ptr_ = texture_manager.GetBlockTilesetPtr();
+    sf::Vector2i p_origin = chunk.getOrigin();
+    for (int i = 0; i < kChunkSize; i++) {
+        for (int j = 0; j < kChunkSize; j++) {
+            sf::Vertex* quad = &vertices_[(i + j * kChunkSize) * 4];
 
 
-            int id = p_chunk.m_blocks[i][j].GetId();
-            int biome = p_chunk.m_blocks[i][j].GetBiome();
+            int id = chunk.blocks_[i][j].GetId();
+            int biome = chunk.blocks_[i][j].GetBiome();
 
-            int g_x = p_origin.x * 16 + i;
-            int g_y = p_origin.y * 16 + j;
+            int g_x = p_origin.x * kChunkSize + i;
+            int g_y = p_origin.y * kChunkSize + j;
 
             int tx = 0, ty = 0;
 
@@ -93,34 +46,34 @@ void RenderChunk::Update(Chunk& p_chunk, Renderer& p_renderer) {
                 ty = 1 + mod((g_y + g_x * 2), 4);
             }
 
-            quad[0].position = sf::Vector2f(i * 16, j * 16);
-            quad[1].position = sf::Vector2f((i + 1) * 16, j * 16);
-            quad[2].position = sf::Vector2f((i + 1) * 16, (j + 1) * 16);
-            quad[3].position = sf::Vector2f(i * 16, (j + 1) * 16);
+            quad[0].position = sf::Vector2f(i * kTextureSize, j * kTextureSize);
+            quad[1].position = sf::Vector2f((i + 1) * kTextureSize, j * kTextureSize);
+            quad[2].position = sf::Vector2f((i + 1) * kTextureSize, (j + 1) * kTextureSize);
+            quad[3].position = sf::Vector2f(i * kTextureSize, (j + 1) * kTextureSize);
 
-            quad[0].texCoords = sf::Vector2f(tx * 16, ty * 16);
-            quad[1].texCoords = sf::Vector2f((tx + 1) * 16 - 1, ty * 16);
-            quad[2].texCoords = sf::Vector2f((tx + 1) * 16 - 1, (ty + 1) * 16 - 1);
-            quad[3].texCoords = sf::Vector2f(tx * 16, (ty + 1) * 16 - 1);
+            quad[0].texCoords = sf::Vector2f(tx * kTextureSize, ty * kTextureSize);
+            quad[1].texCoords = sf::Vector2f((tx + 1) * kTextureSize - 1, ty * kTextureSize);
+            quad[2].texCoords = sf::Vector2f((tx + 1) * kTextureSize - 1, (ty + 1) * kTextureSize - 1);
+            quad[3].texCoords = sf::Vector2f(tx * kTextureSize, (ty + 1) * kTextureSize - 1);
         }
     }
-    setPosition(p_chunk.getOrigin().x * 256, p_chunk.getOrigin().y * 256);
+    setPosition(chunk.getOrigin().x * kChunkSize * kTextureSize, chunk.getOrigin().y * kChunkSize * kTextureSize);
 }
 
 void RenderChunk::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     states.transform *= getTransform();
-    states.texture = m_tileset;
-    target.draw(m_vertices, states);
+    states.texture = tileset_ptr_;
+    target.draw(vertices_, states);
 }
 
-void RenderWorld::Update(World& p_world, Renderer& p_renderer){
-    for(auto p_chunk : p_world.m_chunks) {
-        m_chunks[p_chunk.first].Update(p_chunk.second, p_renderer);
+void RenderWorld::Update(World& world, TextureManager& texture_manager){
+    for(auto chunk : world.chunks_) {
+        render_chunks_[chunk.first].Update(chunk.second, texture_manager);
     }
 }
 
 void RenderWorld::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-    for(auto p_renderChunk : m_chunks) {
-        p_renderChunk.second.draw(target, states);
+    for(auto render_chunk : render_chunks_) {
+        render_chunk.second.draw(target, states);
     }
 }
