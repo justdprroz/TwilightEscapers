@@ -8,6 +8,7 @@
 #include <Utils.hpp>
 
 const int kTextureSize = 16;
+const int kTileSize = 16;
 
 class TextureManager {
 public:
@@ -23,7 +24,16 @@ private:
 
 class RenderChunk : public sf::Drawable, public sf::Transformable {
 public:
-    void Update(Chunk& chunk, TextureManager& texture_manager);
+    void Update(Chunk& chunk, TextureManager& texture_manager, World &world);
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+private:
+    sf::VertexArray vertices_;
+    sf::Texture* tileset_ptr_;
+};
+
+class RenderEntities : public sf::Drawable, public sf::Transformable {
+public:
+    void Update(std::vector<Entity> &entities, TextureManager& texture_manager);
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 private:
     sf::VertexArray vertices_;
@@ -36,6 +46,7 @@ public:
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 private:
     std::map<std::pair<int, int>, RenderChunk> render_chunks_;
+    RenderEntities render_entities_;
 };
 
 #endif

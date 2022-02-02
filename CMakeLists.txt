@@ -31,10 +31,10 @@ if (MSVC)
     find_library(SFMLSYSTEM NAMES sfml-system.lib PATHS "C:\\SFML-2.5.1\\lib")
 
     add_executable(twe source/main.cpp source/Render.cpp)
-    # add_executable(light source/lightexample.cpp)
+    add_executable(light source/lightexample.cpp)
     # add_executable(particle source/particles.cpp)
 
     target_link_libraries(twe ${SFMLGRAPHICS} ${SFMLWINDOW} ${SFMLSYSTEM})
-    # target_link_libraries(light ${SFMLGRAPHICS} ${SFMLWINDOW} ${SFMLSYSTEM})
+    target_link_libraries(light ${SFMLGRAPHICS} ${SFMLWINDOW} ${SFMLSYSTEM})
     # target_link_libraries(particle ${SFMLGRAPHICS} ${SFMLWINDOW} ${SFMLSYSTEM})
 endif(MSVC)

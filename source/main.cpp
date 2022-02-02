@@ -7,7 +7,7 @@
 #include <utility>
 #include <Utils.hpp>
 
-const int render_distance = 4;
+const int render_distance = 8;
 
 void Terminal() {
 
@@ -93,7 +93,6 @@ void NoiseDebug(sf::RenderWindow &p_win, sf::Texture* p_ptrtext) {
     p_win.draw(cell);
 }
 
-
 int main() {
     sf::Font debugfont;
     debugfont.loadFromFile("assets/fonts/arial.ttf");
@@ -101,18 +100,20 @@ int main() {
     // Some variables for window
     std::string title = "EscapeFromTwilight ";
     int winWidth = 1000;
-    int winHeight = 800;
-    float scale = 1;
+    int winHeight = 1000;
+    float scale = 4;
     int viewWidth = winWidth * scale;
     int viewHeight = winHeight * scale;
 
     // View & Window
+    sf::ContextSettings settings;
+    settings.antialiasingLevel = 0;
     sf::View mainView;
-    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::Default);
+    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::Default, settings);
     mainView.setSize(viewWidth, viewHeight);
     mainView.setCenter(0, 0);
     window.setView(mainView);
-
+    bool fullscreen = false;
     // Clocks and time
     sf::Clock mainRenderClock;
     sf::Clock mainTickClock;
@@ -132,13 +133,9 @@ int main() {
     // mainWorld.SummonEntity({0});
 
     // Rendering
-
     TextureManager texture_manager("assets");
-
     RenderWorld mainRenderWorld;
     mainRenderWorld.Update(main_world, texture_manager);
-
-    int rendermode = 0;
 
     // Debug gui
     sf::Text text;
@@ -170,16 +167,6 @@ int main() {
                         main_world.SaveChunks("DebugWorldSave");
                     }
                 }
-                if (event.key.code == sf::Keyboard::Q){
-                    sf::Texture texture;
-                    texture.create(window.getSize().x, window.getSize().y);
-                    texture.update(window);
-                    texture.copyToImage().saveToFile("mapScreenshot.png");
-                }
-                if (event.key.code == sf::Keyboard::R){
-                    rendermode++;
-                    rendermode %= 2;
-                }
             }
         }
         window.setView(mainView);
@@ -187,7 +174,7 @@ int main() {
 
         window.draw(mainRenderWorld);
 
-        text.setString(std::to_string(1.0 / lastframetime) + '\n' + std::to_string(rendermode));
+        text.setString(std::to_string(1.0 / lastframetime) + '\n');
 
         window.setView(sf::View());
         window.draw(text);

@@ -26,21 +26,32 @@ public:
     Entity(int p_id) : id_(p_id) {
         std::cout << id_ << '\n';
     };
-    // Position and state managment
-    void SetPosition(sf::Vector2f p_pos) {
-        position_ = p_pos;
-    }
-    sf::Vector2f GetPosition() {
-        return position_;
+    void SetId(int id){
+        id_ = id;
     }
     int GetId(){
         return id_;
     }
+    // Position and state managment
+    void SetPosition(sf::Vector2f position) {
+        position_ = position;
+    }
+    sf::Vector2f GetPosition() {
+        return position_;
+    }
+    void SetVelocity(sf::Vector2f velocity) {
+        velocity_ = velocity;
+    }
+    sf::Vector2f GetVelocity() {
+        return velocity_;
+    }
     // Update
-    void Update(float p_tickTime) {
+    void Update(float tick_time) {
+        position_ += velocity_ * tick_time;
     }
 protected:
     sf::Vector2f position_;
+    sf::Vector2f velocity_;
     int id_;
 };
 
@@ -152,7 +163,9 @@ public:
     }
     // Blocks
     Block GetBlock(sf::Vector2i position) {
-        return chunks_[{div<int>(position.x, kChunkSize),div<int>(position.y, kChunkSize)}].GetBlock({mod<int>(position.x, kChunkSize),mod<int>(position.y, kChunkSize)});
+        sf::Vector2i chunk_position = {div<int>(position.x, kChunkSize),div<int>(position.y, kChunkSize)};
+        if (!IsChunkExist(chunk_position)) return {INT_MIN};
+        return chunks_[{chunk_position.x, chunk_position.y}].GetBlock({mod<int>(position.x, kChunkSize),mod<int>(position.y, kChunkSize)});
     }
     void PlaceBlock(sf::Vector2i position, const Block &block) {
         chunks_[{div<int>(position.x, kChunkSize),div<int>(position.y, kChunkSize)}].PlaceBlock({mod<int>(position.x, kChunkSize),mod<int>(position.y, kChunkSize)}, block);
@@ -211,7 +224,15 @@ public:
                 float noiseHeightValue = noise_block_.GetNoise(static_cast<float>(i + position.x * kChunkSize), static_cast<float>(j + position.y * kChunkSize));
                 int blockId = static_cast<int>(LinearInterpolation(noiseHeightValue, -1.f, 1.0f, 0.0f, 2.0f));
                 float noiseBiomeValue = noise_biome_.GetNoise(static_cast<float>(i + position.x * kChunkSize), static_cast<float>(j + position.y * kChunkSize));
-                int biomeId = static_cast<int>(LinearInterpolation(noiseBiomeValue, -1.f, 1.0f, 0.0f, 3.0f));
+                float biomeInterpolated = LinearInterpolation(noiseBiomeValue, -1.f, 1.0f, 0.0f, 3.0f);
+                int biomeId = 0;
+                if (InRange(biomeInterpolated, 0.0f, 0.5f)) {
+                    biomeId = 0;
+                } else if (InRange(biomeInterpolated, 0.5f, 0.9f)) {
+                    biomeId = 1;
+                } else if (InRange(biomeInterpolated, 0.9f, 1.1f)) {
+                    biomeId = 2;
+                }
                 chunks_[{position.x, position.y}].PlaceBlock({i, j}, {blockId, biomeId});
             }
         }
