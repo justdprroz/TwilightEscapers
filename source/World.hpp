@@ -23,8 +23,9 @@ class Entity {
 public:
     // Constructors and Inizializers
     Entity();
-    Entity(int p_id) : id_(p_id) {
-        std::cout << id_ << '\n';
+    Entity(int p_id, sf::Vector2f pos) {
+        id_ = p_id;
+        position_ = pos;
     };
     void SetId(int id){
         id_ = id;
@@ -57,7 +58,7 @@ protected:
 
 class Character : public Entity {
 public:
-    Character() : Entity(0) {};
+    Character(){};
     void HandleInput(sf::Event){
         // TODO:
     }

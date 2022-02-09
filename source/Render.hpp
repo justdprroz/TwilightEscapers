@@ -8,18 +8,21 @@
 #include <Utils.hpp>
 
 const int kTextureSize = 16;
-const int kTileSize = 16;
+const int kTileSize = 32;
 
 class TextureManager {
 public:
     TextureManager() = default;
     TextureManager(std::string assets_path);
     void SetAssetsPath(std::string path);
-    sf::Texture* GetBlockTilesetPtr();
-private:
     void LoadBlockTileset();
+    void LoadEntityTileset();
+    sf::Texture* GetBlockTilesetPtr();
+    sf::Texture* GetEntityTilesetPtr();
+private:
     std::string assets_path_;
     sf::Texture block_tileset_;
+    sf::Texture entity_tileset_;
 };
 
 class RenderChunk : public sf::Drawable, public sf::Transformable {

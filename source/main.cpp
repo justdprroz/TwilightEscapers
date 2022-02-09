@@ -101,7 +101,7 @@ int main() {
     std::string title = "EscapeFromTwilight ";
     int winWidth = 1000;
     int winHeight = 1000;
-    float scale = 4;
+    float scale = 1;
     int viewWidth = winWidth * scale;
     int viewHeight = winHeight * scale;
 
@@ -130,7 +130,10 @@ int main() {
         }
     }
 
-    // mainWorld.SummonEntity({0});
+    main_world.SummonEntity({0, {-5, 5}});
+    main_world.SummonEntity({5, {5, 5}});
+    main_world.SummonEntity({8, {5, -5}});
+    main_world.SummonEntity({14, {-5, -5}});
 
     // Rendering
     TextureManager texture_manager("assets");

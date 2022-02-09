@@ -5,6 +5,7 @@
 TextureManager::TextureManager(std::string assets_path) {
     assets_path_ = assets_path;
     LoadBlockTileset();
+    LoadEntityTileset();
 }
 
 void TextureManager::SetAssetsPath(std::string path) {
@@ -15,8 +16,16 @@ void TextureManager::LoadBlockTileset() {
     block_tileset_.loadFromFile(assets_path_ + "/textures/tiles/tileset.png");
 }
 
+void TextureManager::LoadEntityTileset() {
+    entity_tileset_.loadFromFile(assets_path_ + "/textures/entity/characters_tileset.png");
+}
+
 sf::Texture* TextureManager::GetBlockTilesetPtr() {
     return &block_tileset_;
+}
+
+sf::Texture* TextureManager::GetEntityTilesetPtr() {
+    return &entity_tileset_;
 }
 
 void RenderChunk::Update(Chunk& chunk, TextureManager& texture_manager, World &world) {
@@ -86,25 +95,45 @@ void RenderChunk::draw(sf::RenderTarget& target, sf::RenderStates states) const 
 }
 
 void RenderEntities::Update(std::vector<Entity> &entities, TextureManager& texture_manager) {
-    for(auto &entity : entities) {
+    for(int i = 0; i < entities.size(); i++) {
         vertices_.setPrimitiveType(sf::Quads);
-        vertices_.resize(kChunkSize * kChunkSize * 4);
-        tileset_ptr_ = texture_manager.GetBlockTilesetPtr();
+        vertices_.resize(entities.size() * 4);
+        tileset_ptr_ = texture_manager.GetEntityTilesetPtr();
+
+        sf::Vertex* quad = &vertices_[i * 4];
+        sf::Vector2f pos = entities[i].GetPosition();
+
+        int id = entities[i].GetId();
+
+        quad[0].position = sf::Vector2f(pos.x * kTileSize, pos.y * kTileSize);
+        quad[1].position = sf::Vector2f((pos.x + 1) * kTileSize, pos.y * kTileSize);
+        quad[2].position = sf::Vector2f((pos.x + 1) * kTileSize, (pos.y + 1) * kTileSize);
+        quad[3].position = sf::Vector2f(pos.x * kTileSize, (pos.y + 1) * kTileSize);
+
+        quad[0].texCoords = sf::Vector2f(0, 0 + id * kTextureSize);
+        quad[1].texCoords = sf::Vector2f(kTextureSize, 0 + id * kTextureSize);
+        quad[2].texCoords = sf::Vector2f(kTextureSize, kTextureSize + id * kTextureSize);
+        quad[3].texCoords = sf::Vector2f(0, kTextureSize + id * kTextureSize);
     }
 }
 
 void RenderEntities::draw(sf::RenderTarget& target, sf::RenderStates states) const{
-
+    states.transform *= getTransform();
+    states.texture = tileset_ptr_;
+    target.draw(vertices_, states);
 };
 
 void RenderWorld::Update(World& world, TextureManager& texture_manager){
     for(auto &chunk : world.chunks_) {
         render_chunks_[chunk.first].Update(chunk.second, texture_manager, world);
     }
+
+    render_entities_.Update(world.entities_, texture_manager);
 }
 
 void RenderWorld::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     for(auto &render_chunk : render_chunks_) {
         render_chunk.second.draw(target, states);
     }
+    render_entities_.draw(target, states);
 }
