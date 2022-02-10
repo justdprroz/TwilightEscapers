@@ -22,10 +22,22 @@ const int kChunkSize = 16;
 class Entity {
 public:
     // Constructors and Inizializers
-    Entity();
-    Entity(int p_id, sf::Vector2f pos) {
+    Entity() {
+        std::cout << "entity default constuctor" << '\n';
+        // std::cout << &position_ << '\n';
+        id_ = 0;
+        type_ = 0;
+        position_ = {0.0f, 0.0f};
+        velocity_ = {0.0f, 0.0f};
+        speed_ = 10;
+        // std::cout << &position_ << '\n';
+    };
+    Entity(int p_id, sf::Vector2f pos) : Entity() {
+        std::cout << "entity standart constuctor" << '\n';
+        // std::cout << &position_ << '\n';
         id_ = p_id;
         position_ = pos;
+        // std::cout << &position_ << '\n';
     };
     void SetId(int id){
         id_ = id;
@@ -38,6 +50,7 @@ public:
         position_ = position;
     }
     sf::Vector2f GetPosition() {
+        // std::cout << "Get position " << position_.x << ' ' << position_.y << ' ' << &position_ << '\n';
         return position_;
     }
     void SetVelocity(sf::Vector2f velocity) {
@@ -49,24 +62,65 @@ public:
     // Update
     void Update(float tick_time) {
         position_ += velocity_ * tick_time;
+        // std::cout << "Update " << position_.x << ' ' << position_.y << ' ' << &position_ << '\n';
     }
 protected:
     sf::Vector2f position_;
     sf::Vector2f velocity_;
+    float speed_;
     int id_;
+    int type_;
 };
 
 class Character : public Entity {
 public:
-    Character(){};
-    void HandleInput(sf::Event){
-        // TODO:
+    Character() : Entity() {
+        std::cout << "character default constuctor" << '\n';
+    };
+    Character(int id, sf::Vector2f pos) : Entity(id, pos) {
+        std::cout << "character standart constuctor" << '\n';
+        // std::cout << &position_ << '\n';
     }
-    std::string GetName() {
-        return name_;
+    void HandleEvent(sf::Event event) {
+        if (event.KeyPressed) {
+            if (event.type == sf::Event::KeyPressed){
+                if (event.key.code == sf::Keyboard::W){
+                    m_pressed[0] = true;
+                }
+                if (event.key.code == sf::Keyboard::D){
+                    m_pressed[1] = true;
+                }
+                if (event.key.code == sf::Keyboard::S){
+                    m_pressed[2] = true;
+                }
+                if (event.key.code == sf::Keyboard::A){
+                    m_pressed[3] = true;
+                }
+            }
+            if (event.type == sf::Event::KeyReleased){
+                if (event.key.code == sf::Keyboard::W){
+                    m_pressed[0] = false;
+                }
+                if (event.key.code == sf::Keyboard::D){
+                    m_pressed[1] = false;
+                }
+                if (event.key.code == sf::Keyboard::S){
+                    m_pressed[2] = false;
+                }
+                if (event.key.code == sf::Keyboard::A){
+                    m_pressed[3] = false;
+                }
+            }
+        }
+    }
+    void Update(float tick_time) {
+        velocity_.x = ((int)m_pressed[1] - (int)m_pressed[3]) * speed_;
+        velocity_.y = ((int)m_pressed[2] - (int)m_pressed[0]) * speed_;
+        Entity::Update(tick_time);
     }
 private:
     std::string name_;
+    bool m_pressed[4] = {false, false, false, false};
 };
 
 class Block {
@@ -156,11 +210,12 @@ public:
     void SetSeed(int seed) {
         seed_ = seed;
     }
-    std::vector<Entity>& GetEntities() {
+    std::vector<Entity*>& GetEntities() {
         return entities_;
     }
-    void SummonEntity(Entity entity){
-        entities_.push_back(entity);
+    // TODO: add entity management system
+    void SummonEntity(Entity &entity){
+        entities_.push_back(&entity);
     }
     // Blocks
     Block GetBlock(sf::Vector2i position) {
@@ -256,7 +311,7 @@ private:
     // Methods
     // Members
     std::map<std::pair<int, int>, Chunk> chunks_;
-    std::vector<Entity> entities_;
+    std::vector<Entity*> entities_;
     FastNoiseLite noise_block_;
     FastNoiseLite noise_biome_;
     int seed_;

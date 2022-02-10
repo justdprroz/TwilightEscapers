@@ -36,7 +36,7 @@ private:
 
 class RenderEntities : public sf::Drawable, public sf::Transformable {
 public:
-    void Update(std::vector<Entity> &entities, TextureManager& texture_manager);
+    void Update(std::vector<Entity*> &entities, TextureManager& texture_manager);
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 private:
     sf::VertexArray vertices_;

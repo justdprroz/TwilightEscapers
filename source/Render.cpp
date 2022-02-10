@@ -94,16 +94,17 @@ void RenderChunk::draw(sf::RenderTarget& target, sf::RenderStates states) const 
     target.draw(vertices_, states);
 }
 
-void RenderEntities::Update(std::vector<Entity> &entities, TextureManager& texture_manager) {
+void RenderEntities::Update(std::vector<Entity*> &entities, TextureManager& texture_manager) {
     for(int i = 0; i < entities.size(); i++) {
         vertices_.setPrimitiveType(sf::Quads);
         vertices_.resize(entities.size() * 4);
         tileset_ptr_ = texture_manager.GetEntityTilesetPtr();
 
         sf::Vertex* quad = &vertices_[i * 4];
-        sf::Vector2f pos = entities[i].GetPosition();
+        sf::Vector2f pos = entities[i]->GetPosition();
+        // std::cout << pos.x << ' ' << pos.y << '\n';
 
-        int id = entities[i].GetId();
+        int id = entities[i]->GetId();
 
         quad[0].position = sf::Vector2f(pos.x * kTileSize, pos.y * kTileSize);
         quad[1].position = sf::Vector2f((pos.x + 1) * kTileSize, pos.y * kTileSize);

@@ -130,10 +130,10 @@ int main() {
         }
     }
 
-    main_world.SummonEntity({0, {-5, 5}});
-    main_world.SummonEntity({5, {5, 5}});
-    main_world.SummonEntity({8, {5, -5}});
-    main_world.SummonEntity({14, {-5, -5}});
+    Character c(1, {0.0f, 0.0f});
+    std::cout << "character" << &c << '\n';
+
+    main_world.SummonEntity(c);
 
     // Rendering
     TextureManager texture_manager("assets");
@@ -152,6 +152,7 @@ int main() {
         float lastframetime = mainRenderClock.restart().asSeconds();
         sf::Event event;
         while (window.pollEvent(event)) {
+            c.HandleEvent(event);
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
@@ -172,11 +173,16 @@ int main() {
                 }
             }
         }
+
+        c.Update(lastframetime);
+
         window.setView(mainView);
         window.clear(sf::Color::Black);
 
-        window.draw(mainRenderWorld);
+        mainRenderWorld.Update(main_world, texture_manager);
 
+    
+        window.draw(mainRenderWorld);
         text.setString(std::to_string(1.0 / lastframetime) + '\n');
 
         window.setView(sf::View());
