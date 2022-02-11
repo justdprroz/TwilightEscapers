@@ -15,15 +15,11 @@ endif (UNIX)
 
 if (MSVC)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/../build)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/../build)
+    set(SFML_DIR "C:/SFML-2.5.1/lib/cmake/SFML")
 
     include_directories("source")
-    include_directories("C:\\SFML-2.5.1\\include")
-
-    find_library(SFMLGRAPHICS NAMES sfml-graphics.lib PATHS "C:\\SFML-2.5.1\\lib")
-    find_library(SFMLWINDOW NAMES sfml-window.lib PATHS "C:\\SFML-2.5.1\\lib")
-    find_library(SFMLSYSTEM NAMES sfml-system.lib PATHS "C:\\SFML-2.5.1\\lib")
+    find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
 
     add_executable(twe source/main.cpp source/Render.cpp)
-    target_link_libraries(twe ${SFMLGRAPHICS} ${SFMLWINDOW} ${SFMLSYSTEM})
+    target_link_libraries(twe sfml-graphics sfml-window sfml-system)
 endif(MSVC)
