@@ -1,11 +1,17 @@
 // Copyright 2021-2022 JustDprroz
 
 #include "Render.hpp"
+#include <chrono>
+
+TextureManager::TextureManager() {
+
+}
 
 TextureManager::TextureManager(std::string assets_path) {
     assets_path_ = assets_path;
     LoadBlockTileset();
     LoadEntityTileset();
+    LoadCharacters();
 }
 
 void TextureManager::SetAssetsPath(std::string path) {
@@ -20,12 +26,23 @@ void TextureManager::LoadEntityTileset() {
     entity_tileset_.loadFromFile(assets_path_ + "/textures/entity/characters_tileset.png");
 }
 
+void TextureManager::LoadCharacters() {
+    for(int i = 0; i < CHARACTERS_AMOUNT; i++){ 
+        characters_textures_[i] = sf::Texture();
+        characters_textures_[i].loadFromFile(assets_path_ + "/textures/entity/characters/" + std::to_string(0) + ".png");
+    }
+}
+
 sf::Texture* TextureManager::GetBlockTilesetPtr() {
     return &block_tileset_;
 }
 
 sf::Texture* TextureManager::GetEntityTilesetPtr() {
     return &entity_tileset_;
+}
+
+sf::Texture* TextureManager::GetCharacterTexturePtr(int id) {
+    return &characters_textures_[id];
 }
 
 void RenderChunk::Update(Chunk& chunk, TextureManager& texture_manager, World &world) {
@@ -36,7 +53,6 @@ void RenderChunk::Update(Chunk& chunk, TextureManager& texture_manager, World &w
     for (int i = 0; i < kChunkSize; i++) {
         for (int j = 0; j < kChunkSize; j++) {
             sf::Vertex* quad = &vertices_[(i + j * kChunkSize) * 4];
-
 
             int id = chunk.blocks_[i][j].GetId();
             int biome = chunk.blocks_[i][j].GetBiome();
@@ -94,6 +110,68 @@ void RenderChunk::draw(sf::RenderTarget& target, sf::RenderStates states) const 
     target.draw(vertices_, states);
 }
 
+void RenderEntity::Update(Entity* entity, TextureManager& texture_manager) {
+    std::cout << "setting quad type" << '\n';
+    vertices_.setPrimitiveType(sf::Quads);
+    std::cout << "resizing " << entity << '\n';
+    vertices_.resize(4);
+
+    sf::Vertex* quad = &vertices_[0];
+    sf::Vector2f pos = entity->GetPosition();
+
+    int type = entity->GetType();
+    int id = entity->GetId();
+    int state = entity->GetState();
+    int heading = entity->GetHeading();
+    std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()
+    );
+    int frame = ms.count() / 250 % 4;
+
+    tileset_ptr_ = texture_manager.GetCharacterTexturePtr(id);
+
+    int tx = 0;
+    int ty = 0;
+
+    if (state == 0) {
+        ty = 0;
+    }
+
+    if (state == 1) {
+        ty = 0 + frame;
+    }
+
+    if (heading == 0) {
+        tx = 1;
+    }
+    if (heading == 1) {
+        tx = 3;
+    }
+    if (heading == 2) {
+        tx = 0;
+    }
+    if (heading == 3) {
+        tx = 2;
+    }
+
+    quad[0].position = sf::Vector2f(pos.x * kTileSize, pos.y * kTileSize);
+    quad[1].position = sf::Vector2f((pos.x + 1) * kTileSize, pos.y * kTileSize);
+    quad[2].position = sf::Vector2f((pos.x + 1) * kTileSize, (pos.y + 1) * kTileSize);
+    quad[3].position = sf::Vector2f(pos.x * kTileSize, (pos.y + 1) * kTileSize);
+
+    quad[0].texCoords = sf::Vector2f(tx * kTextureSize, ty * kTextureSize);
+    quad[1].texCoords = sf::Vector2f((tx + 1) * kTextureSize, ty * kTextureSize);
+    quad[2].texCoords = sf::Vector2f((tx + 1) * kTextureSize, (ty + 1) * kTextureSize);
+    quad[3].texCoords = sf::Vector2f(tx * kTextureSize, (ty + 1) * kTextureSize);
+
+}
+
+void RenderEntity::draw(sf::RenderTarget& target, sf::RenderStates states) const{
+    states.transform *= getTransform();
+    states.texture = tileset_ptr_;
+    target.draw(vertices_, states);
+};
+
 void RenderEntities::Update(std::vector<Entity*> &entities, TextureManager& texture_manager) {
     for(int i = 0; i < entities.size(); i++) {
         vertices_.setPrimitiveType(sf::Quads);
@@ -103,6 +181,7 @@ void RenderEntities::Update(std::vector<Entity*> &entities, TextureManager& text
         sf::Vertex* quad = &vertices_[i * 4];
         sf::Vector2f pos = entities[i]->GetPosition();
 
+        int type = entities[i]->GetId();
         int id = entities[i]->GetId();
 
         quad[0].position = sf::Vector2f(pos.x * kTileSize, pos.y * kTileSize);
@@ -124,16 +203,22 @@ void RenderEntities::draw(sf::RenderTarget& target, sf::RenderStates states) con
 };
 
 void RenderWorld::Update(World& world, TextureManager& texture_manager){
+    std::cout << "updating chunks" << '\n';
     for(auto &chunk : world.chunks_) {
         render_chunks_[chunk.first].Update(chunk.second, texture_manager, world);
     }
-
-    render_entities_.Update(world.entities_, texture_manager);
+    std::cout << "updating entities" << '\n';
+    for(int i = 0; i < world.entities_.size(); i++){
+        if(i >= render_entities_.size()) render_entities_.push_back(RenderEntity());
+        render_entities_[i].Update(world.entities_[i], texture_manager);
+    }
 }
 
 void RenderWorld::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     for(auto &render_chunk : render_chunks_) {
         render_chunk.second.draw(target, states);
     }
-    render_entities_.draw(target, states);
+    for(int i = 0; i < render_entities_.size(); i++){
+        render_entities_[i].draw(target, states);
+    }
 }

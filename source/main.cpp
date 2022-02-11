@@ -131,14 +131,13 @@ int main() {
     }
 
     Character c(1, {0.0f, 0.0f});
-    std::cout << "character" << &c << '\n';
-
+    std::cout << "created character at " << &c << '\n';
     main_world.SummonEntity(c);
 
     // Rendering
     TextureManager texture_manager("assets");
     RenderWorld mainRenderWorld;
-    mainRenderWorld.Update(main_world, texture_manager);
+    // mainRenderWorld.Update(main_world, texture_manager);
 
     // Debug gui
     sf::Text text;
@@ -173,7 +172,6 @@ int main() {
                 }
             }
         }
-
         c.Update(lastframetime);
 
         window.setView(mainView);
@@ -181,7 +179,6 @@ int main() {
 
         mainRenderWorld.Update(main_world, texture_manager);
 
-    
         window.draw(mainRenderWorld);
         text.setString(std::to_string(1.0 / lastframetime) + '\n');
 

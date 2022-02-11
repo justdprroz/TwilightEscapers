@@ -7,8 +7,9 @@ Entity::Entity() {
     type_ = 0;
     position_ = {0.0f, 0.0f};
     velocity_ = {0.0f, 0.0f};
-    speed_ = 10;
+    speed_ = 5;
     heading_ = 0;
+    state_ = 0;
 }
 
 Entity::Entity(int p_id, sf::Vector2f pos) : Entity() {
@@ -16,13 +17,26 @@ Entity::Entity(int p_id, sf::Vector2f pos) : Entity() {
     position_ = pos;
 }
 
-void Entity::SetId(int id) {
-    id_ = id;
-}
-
 int Entity::GetId() {
     return id_;
 }
+
+int Entity::GetType() {
+    return type_;
+}
+
+int Entity::GetHeading() {
+    return heading_;
+}
+
+int Entity::GetState() {
+    return state_;
+}
+
+int Entity::GetAnimFrame() {
+    return anim_frame_;
+}
+
 
 void Entity::SetPosition(sf::Vector2f position) {
     position_ = position;
@@ -45,26 +59,30 @@ void Entity::Update(float tick_time) {
 }
 
 Character::Character() : Entity() {
-
+    type_ = 1;
 };
 
 Character::Character(int id, sf::Vector2f pos) : Entity(id, pos) {
-
+    type_ = 1;
 }
 
 void Character::HandleEvent(sf::Event &event) {
     if (event.KeyPressed) {
         if (event.type == sf::Event::KeyPressed){
             if (event.key.code == sf::Keyboard::W){
+                heading_ = 0;
                 pressed_[0] = true;
             }
             if (event.key.code == sf::Keyboard::D){
+                heading_ = 1;
                 pressed_[1] = true;
             }
             if (event.key.code == sf::Keyboard::S){
+                heading_ = 2;
                 pressed_[2] = true;
             }
             if (event.key.code == sf::Keyboard::A){
+                heading_ = 3;
                 pressed_[3] = true;
             }
         }
@@ -82,6 +100,11 @@ void Character::HandleEvent(sf::Event &event) {
                 pressed_[3] = false;
             }
         }
+    }
+    if (pressed_[0] || pressed_[1] || pressed_[2] || pressed_[3]) {
+        state_ = 1;
+    } else {
+        state_ = 0;
     }
 }
 

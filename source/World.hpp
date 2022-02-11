@@ -25,10 +25,13 @@ class Entity {
 public:
     Entity();
     Entity(int p_id, sf::Vector2f pos);
-    void SetId(int id);
     void SetPosition(sf::Vector2f position);
     void SetVelocity(sf::Vector2f velocity);
     int GetId();
+    int GetType();
+    int GetHeading();
+    int GetState();
+    int GetAnimFrame();
     sf::Vector2f GetPosition();
     sf::Vector2f GetVelocity();
     void Update(float tick_time);
@@ -39,6 +42,8 @@ protected:
     int id_;
     int type_;
     int heading_;
+    int state_;
+    int anim_frame_;
 };
 
 class Character : public Entity {
