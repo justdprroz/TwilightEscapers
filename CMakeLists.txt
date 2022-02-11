@@ -9,7 +9,7 @@ if (UNIX)
     include_directories("source")
     find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
 
-    add_executable(twe source/main.cpp source/Render.cpp)
+    add_executable(twe source/main.cpp source/Render.cpp source/World.cpp)
     target_link_libraries(twe sfml-graphics sfml-window sfml-system)
 endif (UNIX)
 
@@ -20,6 +20,6 @@ if (MSVC)
     include_directories("source")
     find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
 
-    add_executable(twe source/main.cpp source/Render.cpp)
+    add_executable(twe source/main.cpp source/Render.cpp source/World.cpp)
     target_link_libraries(twe sfml-graphics sfml-window sfml-system)
 endif(MSVC)

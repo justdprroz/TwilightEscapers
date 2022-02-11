@@ -8,7 +8,7 @@
 #include <Utils.hpp>
 
 const int kTextureSize = 16;
-const int kTileSize = 32;
+const int kTileSize = 48;
 
 class TextureManager {
 public:

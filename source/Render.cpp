@@ -32,7 +32,7 @@ void RenderChunk::Update(Chunk& chunk, TextureManager& texture_manager, World &w
     vertices_.setPrimitiveType(sf::Quads);
     vertices_.resize(kChunkSize * kChunkSize * 4);
     tileset_ptr_ = texture_manager.GetBlockTilesetPtr();
-    sf::Vector2i p_origin = chunk.getOrigin();
+    sf::Vector2i p_origin = chunk.GetOrigin();
     for (int i = 0; i < kChunkSize; i++) {
         for (int j = 0; j < kChunkSize; j++) {
             sf::Vertex* quad = &vertices_[(i + j * kChunkSize) * 4];
@@ -85,7 +85,7 @@ void RenderChunk::Update(Chunk& chunk, TextureManager& texture_manager, World &w
             quad[3].texCoords = sf::Vector2f(tx * kTextureSize, (ty + 1) * kTextureSize);
         }
     }
-    setPosition(chunk.getOrigin().x * kChunkSize * kTileSize, chunk.getOrigin().y * kChunkSize * kTileSize);
+    setPosition(chunk.GetOrigin().x * kChunkSize * kTileSize, chunk.GetOrigin().y * kChunkSize * kTileSize);
 }
 
 void RenderChunk::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -102,7 +102,6 @@ void RenderEntities::Update(std::vector<Entity*> &entities, TextureManager& text
 
         sf::Vertex* quad = &vertices_[i * 4];
         sf::Vector2f pos = entities[i]->GetPosition();
-        // std::cout << pos.x << ' ' << pos.y << '\n';
 
         int id = entities[i]->GetId();
 
