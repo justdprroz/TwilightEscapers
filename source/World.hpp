@@ -16,6 +16,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <external/FastNoiseLite.h>
 #include <Utils.hpp>
+#include <climits>
 
 const int kChunkSize = 16;
 
