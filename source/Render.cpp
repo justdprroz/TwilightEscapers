@@ -111,9 +111,7 @@ void RenderChunk::draw(sf::RenderTarget& target, sf::RenderStates states) const 
 }
 
 void RenderEntity::Update(Entity* entity, TextureManager& texture_manager) {
-    std::cout << "setting quad type" << '\n';
     vertices_.setPrimitiveType(sf::Quads);
-    std::cout << "resizing " << entity << '\n';
     vertices_.resize(4);
 
     sf::Vertex* quad = &vertices_[0];
@@ -203,11 +201,9 @@ void RenderEntities::draw(sf::RenderTarget& target, sf::RenderStates states) con
 };
 
 void RenderWorld::Update(World& world, TextureManager& texture_manager){
-    std::cout << "updating chunks" << '\n';
     for(auto &chunk : world.chunks_) {
         render_chunks_[chunk.first].Update(chunk.second, texture_manager, world);
     }
-    std::cout << "updating entities" << '\n';
     for(int i = 0; i < world.entities_.size(); i++){
         if(i >= render_entities_.size()) render_entities_.push_back(RenderEntity());
         render_entities_[i].Update(world.entities_[i], texture_manager);
