@@ -124,7 +124,7 @@ void RenderEntity::Update(Entity* entity, TextureManager& texture_manager) {
     std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now().time_since_epoch()
     );
-    int frame = ms.count() / 250 % 4;
+    int frame = ms.count() / (1250 / entity->GetSpeed()) % 4;
 
     tileset_ptr_ = texture_manager.GetCharacterTexturePtr(id);
 

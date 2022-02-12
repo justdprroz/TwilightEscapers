@@ -38,6 +38,10 @@ int Entity::GetAnimFrame() {
 }
 
 
+int Entity::GetSpeed() {
+    return speed_;
+}
+
 void Entity::SetPosition(sf::Vector2f position) {
     position_ = position;
 }
@@ -70,20 +74,19 @@ void Character::HandleEvent(sf::Event &event) {
     if (event.KeyPressed) {
         if (event.type == sf::Event::KeyPressed){
             if (event.key.code == sf::Keyboard::W){
-                heading_ = 0;
                 pressed_[0] = true;
             }
             if (event.key.code == sf::Keyboard::D){
-                heading_ = 1;
                 pressed_[1] = true;
             }
             if (event.key.code == sf::Keyboard::S){
-                heading_ = 2;
                 pressed_[2] = true;
             }
             if (event.key.code == sf::Keyboard::A){
-                heading_ = 3;
                 pressed_[3] = true;
+            }
+            if (event.key.code == sf::Keyboard::LShift) {
+                speed_ = 10;
             }
         }
         if (event.type == sf::Event::KeyReleased){
@@ -99,10 +102,17 @@ void Character::HandleEvent(sf::Event &event) {
             if (event.key.code == sf::Keyboard::A){
                 pressed_[3] = false;
             }
+            if (event.key.code == sf::Keyboard::LShift) {
+                speed_ = 5;
+            }
         }
     }
-    if (pressed_[0] || pressed_[1] || pressed_[2] || pressed_[3]) {
+    if (pressed_[0] != pressed_[2] || pressed_[1] != pressed_[3]) {
         state_ = 1;
+        if (pressed_[0] && !pressed_[2]) heading_ = 0;
+        if (pressed_[2] && !pressed_[0]) heading_ = 2;
+        if (pressed_[1] && !pressed_[3]) heading_ = 1;
+        if (pressed_[3] && !pressed_[1]) heading_ = 3;
     } else {
         state_ = 0;
     }

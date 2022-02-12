@@ -32,6 +32,7 @@ public:
     int GetHeading();
     int GetState();
     int GetAnimFrame();
+    int GetSpeed();
     sf::Vector2f GetPosition();
     sf::Vector2f GetVelocity();
     void Update(float tick_time);
