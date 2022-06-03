@@ -90,18 +90,18 @@ void RenderChunk::Update(Chunk& chunk, TextureManager& texture_manager, World &w
                 ty = 1 + mod((g_y + g_x * 2), 4);
             }
 
-            quad[0].position = sf::Vector2f(i * kTileSize, j * kTileSize);
-            quad[1].position = sf::Vector2f((i + 1) * kTileSize, j * kTileSize);
-            quad[2].position = sf::Vector2f((i + 1) * kTileSize, (j + 1) * kTileSize);
-            quad[3].position = sf::Vector2f(i * kTileSize, (j + 1) * kTileSize);
+            quad[0].position = sf::Vector2f(i * TILE_SIZE, j * TILE_SIZE);
+            quad[1].position = sf::Vector2f((i + 1) * TILE_SIZE, j * TILE_SIZE);
+            quad[2].position = sf::Vector2f((i + 1) * TILE_SIZE, (j + 1) * TILE_SIZE);
+            quad[3].position = sf::Vector2f(i * TILE_SIZE, (j + 1) * TILE_SIZE);
 
-            quad[0].texCoords = sf::Vector2f(tx * kTextureSize, ty * kTextureSize);
-            quad[1].texCoords = sf::Vector2f((tx + 1) * kTextureSize, ty * kTextureSize);
-            quad[2].texCoords = sf::Vector2f((tx + 1) * kTextureSize, (ty + 1) * kTextureSize);
-            quad[3].texCoords = sf::Vector2f(tx * kTextureSize, (ty + 1) * kTextureSize);
+            quad[0].texCoords = sf::Vector2f(tx * TEXTURE_SIZE, ty * TEXTURE_SIZE);
+            quad[1].texCoords = sf::Vector2f((tx + 1) * TEXTURE_SIZE, ty * TEXTURE_SIZE);
+            quad[2].texCoords = sf::Vector2f((tx + 1) * TEXTURE_SIZE, (ty + 1) * TEXTURE_SIZE);
+            quad[3].texCoords = sf::Vector2f(tx * TEXTURE_SIZE, (ty + 1) * TEXTURE_SIZE);
         }
     }
-    setPosition(chunk.GetOrigin().x * kChunkSize * kTileSize, chunk.GetOrigin().y * kChunkSize * kTileSize);
+    setPosition(chunk.GetOrigin().x * kChunkSize * TILE_SIZE, chunk.GetOrigin().y * kChunkSize * TILE_SIZE);
 }
 
 void RenderChunk::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -152,49 +152,19 @@ void RenderEntity::Update(Entity* entity, TextureManager& texture_manager) {
         tx = 2;
     }
 
-    quad[0].position = sf::Vector2f(pos.x * kTileSize, pos.y * kTileSize);
-    quad[1].position = sf::Vector2f((pos.x + 1) * kTileSize, pos.y * kTileSize);
-    quad[2].position = sf::Vector2f((pos.x + 1) * kTileSize, (pos.y + 1) * kTileSize);
-    quad[3].position = sf::Vector2f(pos.x * kTileSize, (pos.y + 1) * kTileSize);
+    quad[0].position = sf::Vector2f(pos.x * TILE_SIZE, pos.y * TILE_SIZE);
+    quad[1].position = sf::Vector2f((pos.x + 1) * TILE_SIZE, pos.y * TILE_SIZE);
+    quad[2].position = sf::Vector2f((pos.x + 1) * TILE_SIZE, (pos.y + 1) * TILE_SIZE);
+    quad[3].position = sf::Vector2f(pos.x * TILE_SIZE, (pos.y + 1) * TILE_SIZE);
 
-    quad[0].texCoords = sf::Vector2f(tx * kTextureSize, ty * kTextureSize);
-    quad[1].texCoords = sf::Vector2f((tx + 1) * kTextureSize, ty * kTextureSize);
-    quad[2].texCoords = sf::Vector2f((tx + 1) * kTextureSize, (ty + 1) * kTextureSize);
-    quad[3].texCoords = sf::Vector2f(tx * kTextureSize, (ty + 1) * kTextureSize);
+    quad[0].texCoords = sf::Vector2f(tx * TEXTURE_SIZE, ty * TEXTURE_SIZE);
+    quad[1].texCoords = sf::Vector2f((tx + 1) * TEXTURE_SIZE, ty * TEXTURE_SIZE);
+    quad[2].texCoords = sf::Vector2f((tx + 1) * TEXTURE_SIZE, (ty + 1) * TEXTURE_SIZE);
+    quad[3].texCoords = sf::Vector2f(tx * TEXTURE_SIZE, (ty + 1) * TEXTURE_SIZE);
 
 }
 
 void RenderEntity::draw(sf::RenderTarget& target, sf::RenderStates states) const{
-    states.transform *= getTransform();
-    states.texture = tileset_ptr_;
-    target.draw(vertices_, states);
-};
-
-void RenderEntities::Update(std::vector<Entity*> &entities, TextureManager& texture_manager) {
-    for(int i = 0; i < entities.size(); i++) {
-        vertices_.setPrimitiveType(sf::Quads);
-        vertices_.resize(entities.size() * 4);
-        tileset_ptr_ = texture_manager.GetEntityTilesetPtr();
-
-        sf::Vertex* quad = &vertices_[i * 4];
-        sf::Vector2f pos = entities[i]->GetPosition();
-
-        int type = entities[i]->GetId();
-        int id = entities[i]->GetId();
-
-        quad[0].position = sf::Vector2f(pos.x * kTileSize, pos.y * kTileSize);
-        quad[1].position = sf::Vector2f((pos.x + 1) * kTileSize, pos.y * kTileSize);
-        quad[2].position = sf::Vector2f((pos.x + 1) * kTileSize, (pos.y + 1) * kTileSize);
-        quad[3].position = sf::Vector2f(pos.x * kTileSize, (pos.y + 1) * kTileSize);
-
-        quad[0].texCoords = sf::Vector2f(0, 0 + id * kTextureSize);
-        quad[1].texCoords = sf::Vector2f(kTextureSize, 0 + id * kTextureSize);
-        quad[2].texCoords = sf::Vector2f(kTextureSize, kTextureSize + id * kTextureSize);
-        quad[3].texCoords = sf::Vector2f(0, kTextureSize + id * kTextureSize);
-    }
-}
-
-void RenderEntities::draw(sf::RenderTarget& target, sf::RenderStates states) const{
     states.transform *= getTransform();
     states.texture = tileset_ptr_;
     target.draw(vertices_, states);
@@ -212,9 +182,9 @@ void RenderWorld::Update(World& world, TextureManager& texture_manager){
 
 void RenderWorld::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     for(auto &render_chunk : render_chunks_) {
-        render_chunk.second.draw(target, states);
+        render_chunk.second.draw(target, sf::RenderStates(getTransform()));
     }
     for(int i = 0; i < render_entities_.size(); i++){
-        render_entities_[i].draw(target, states);
+        render_entities_[i].draw(target, sf::RenderStates(getTransform()));
     }
 }

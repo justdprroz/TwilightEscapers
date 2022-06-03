@@ -15,7 +15,7 @@ endif (UNIX)
 
 if (MSVC)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/../build)
-    set(SFML_DIR "C:/SFML-2.5.1/lib/cmake/SFML")
+    set(SFML_DIR "C:/SFML/lib/cmake/SFML")
 
     include_directories("source")
     find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
