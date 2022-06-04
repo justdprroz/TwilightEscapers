@@ -11,7 +11,7 @@ cp -r assets build/
 cd tmp
 
 # Generate cmake files
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 
 # Build projects
 make
