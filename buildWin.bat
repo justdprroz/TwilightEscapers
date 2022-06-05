@@ -4,15 +4,14 @@ rem Generate directories
 if not exist build\ mkdir build
 if not exist tmp\ mkdir tmp
 
-rem Go to directories
+rem Move dlls and assets to build directory
+xcopy assets\ build\assets\ /E /Y
 
+rem Go to directories
 cd tmp
 
 rem Generate cmake files
-
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+cmake ..
 
 rem Build projects
-
-@REM There is an error with images when building from cmd
-@REM "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe" ".\Twilight Escapers.sln"
+"C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Current\Bin\MSBuild.exe" ".\Twilight Escapers.sln" /property:Configuration=Release
