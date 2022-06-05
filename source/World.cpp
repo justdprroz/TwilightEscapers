@@ -88,6 +88,16 @@ void Character::HandleEvent(sf::Event &event) {
             if (event.key.code == sf::Keyboard::LShift) {
                 speed_ = 10;
             }
+            if (event.key.code == sf::Keyboard::LControl) {
+                speed_ = 2;
+            }
+            if (event.key.code == sf::Keyboard::Enter) {
+                if (speed_ != 5) {
+                    speed_ = 5;
+                } else {
+                    speed_ = 100;
+                }
+            }
         }
         if (event.type == sf::Event::KeyReleased){
             if (event.key.code == sf::Keyboard::W){
@@ -103,6 +113,9 @@ void Character::HandleEvent(sf::Event &event) {
                 pressed_[3] = false;
             }
             if (event.key.code == sf::Keyboard::LShift) {
+                speed_ = 5;
+            }
+            if (event.key.code == sf::Keyboard::LControl) {
                 speed_ = 5;
             }
         }

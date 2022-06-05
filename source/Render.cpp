@@ -29,7 +29,7 @@ void TextureManager::LoadEntityTileset() {
 void TextureManager::LoadCharacters() {
     for(int i = 0; i < CHARACTERS_AMOUNT; i++){ 
         characters_textures_[i] = sf::Texture();
-        characters_textures_[i].loadFromFile(assets_path_ + "/textures/entity/characters/" + std::to_string(0) + ".png");
+        characters_textures_[i].loadFromFile(assets_path_ + "/textures/entity/characters/" + std::to_string(i) + ".png");
     }
 }
 
@@ -63,24 +63,26 @@ void RenderChunk::Update(Chunk& chunk, TextureManager& texture_manager, World &w
             int tx = 0, ty = 0;
 
             if (id == 0) {
+                // FIXME: TODO: Properly implement textures connections
                 int lx = 0;
                 int ly = 0;
-                if (world.GetBlock({p_origin.x * 16 + i - 1, p_origin.y * 16 + j}).GetId() == 1) {
-                    lx = -1;
-                }
-                if (world.GetBlock({p_origin.x * 16 + i + 1, p_origin.y * 16 + j}).GetId() == 1) {
-                    lx = 1;
-                }
-                if (world.GetBlock({p_origin.x * 16 + i, p_origin.y * 16 + j - 1}).GetId() == 1) {
-                    ly = -1;
-                }
-                if (world.GetBlock({p_origin.x * 16 + i, p_origin.y * 16 + j + 1}).GetId() == 1) {
-                    ly = 1;
-                }
+                // if (world.GetBlock({p_origin.x * 16 + i - 1, p_origin.y * 16 + j}).GetId() == 1) {
+                //     lx = -1;
+                // }
+                // if (world.GetBlock({p_origin.x * 16 + i + 1, p_origin.y * 16 + j}).GetId() == 1) {
+                //     lx = 1;
+                // }
+                // if (world.GetBlock({p_origin.x * 16 + i, p_origin.y * 16 + j - 1}).GetId() == 1) {
+                //     ly = -1;
+                // }
+                // if (world.GetBlock({p_origin.x * 16 + i, p_origin.y * 16 + j + 1}).GetId() == 1) {
+                //     ly = 1;
+                // }
                 if(ly == 0 && lx == 0) {
                     tx = 4 + biome * 21;
                     ty = 0 + mod((g_y + g_x * 2), 4);
                 } else {
+                    // Never accessed
                     tx = lx + 2 + biome * 21;
                     ty = ly + 1;
                 }
@@ -90,11 +92,11 @@ void RenderChunk::Update(Chunk& chunk, TextureManager& texture_manager, World &w
                 ty = 1 + mod((g_y + g_x * 2), 4);
             }
 
+            // FIXME: Vertical lines artifacts
             quad[0].position = sf::Vector2f(i * TILE_SIZE, j * TILE_SIZE);
             quad[1].position = sf::Vector2f((i + 1) * TILE_SIZE, j * TILE_SIZE);
             quad[2].position = sf::Vector2f((i + 1) * TILE_SIZE, (j + 1) * TILE_SIZE);
             quad[3].position = sf::Vector2f(i * TILE_SIZE, (j + 1) * TILE_SIZE);
-
             quad[0].texCoords = sf::Vector2f(tx * TEXTURE_SIZE, ty * TEXTURE_SIZE);
             quad[1].texCoords = sf::Vector2f((tx + 1) * TEXTURE_SIZE, ty * TEXTURE_SIZE);
             quad[2].texCoords = sf::Vector2f((tx + 1) * TEXTURE_SIZE, (ty + 1) * TEXTURE_SIZE);
@@ -104,6 +106,7 @@ void RenderChunk::Update(Chunk& chunk, TextureManager& texture_manager, World &w
     setPosition(chunk.GetOrigin().x * kChunkSize * TILE_SIZE, chunk.GetOrigin().y * kChunkSize * TILE_SIZE);
 }
 
+// Draw Chunk
 void RenderChunk::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     states.transform *= getTransform();
     states.texture = tileset_ptr_;
@@ -164,6 +167,7 @@ void RenderEntity::Update(Entity* entity, TextureManager& texture_manager) {
 
 }
 
+// Draw Entity
 void RenderEntity::draw(sf::RenderTarget& target, sf::RenderStates states) const{
     states.transform *= getTransform();
     states.texture = tileset_ptr_;
@@ -180,6 +184,7 @@ void RenderWorld::Update(World& world, TextureManager& texture_manager){
     }
 }
 
+// Draw Everything
 void RenderWorld::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     for(auto &render_chunk : render_chunks_) {
         render_chunk.second.draw(target, sf::RenderStates(getTransform()));
