@@ -11,19 +11,23 @@
 const int TEXTURE_SIZE = 16;
 const int TILE_SIZE = 32;//32
 
+
+
 void Terminal() {
 
 }
 
 int main() {
     sf::Font debugfont;
-    debugfont.loadFromFile("assets/fonts/arial.ttf");
+    debugfont.loadFromFile("assets/fonts/CascadiaCode.ttf");
 
     // Some variables for window
     std::string title = "EscapeFromTwilight ";
     int winWidth = 1000;
     int winHeight = 1000;
     float scale = 1;
+    float zoom = 1;
+
     int viewWidth = winWidth * scale;
     int viewHeight = winHeight * scale;
 
@@ -31,6 +35,11 @@ int main() {
     sf::View mainView;
     mainView.setSize(viewWidth, viewHeight);
     mainView.setCenter(0, 0);
+    mainView.zoom(zoom);
+
+    sf::View textView;
+    textView.setSize(viewWidth, viewHeight);
+    textView.setCenter(viewWidth / 2, viewHeight / 2);
 
     // Setting to explicitly disable AA
     sf::ContextSettings settings;
@@ -39,8 +48,10 @@ int main() {
     // Create main render Window
     sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::Default, settings);
     window.setView(mainView);
-
-    // bool fullscreen = false;
+    window.setFramerateLimit(256); // check when you want
+    // window.setVerticalSyncEnabled(true); // check when you want
+    // bool fullscreen = false; // check when you want
+    window.setKeyRepeatEnabled(false);
 
     // Clocks and time
     sf::Clock mainRenderClock;
@@ -84,18 +95,44 @@ int main() {
                 window.close();
             }
             if (event.type == sf::Event::Resized){
+
+                std::cout << "Resize invoked\n";
+
                 winWidth = event.size.width;
                 winHeight = event.size.height;
                 viewWidth = winWidth * scale;
                 viewHeight = winHeight * scale;
+
                 mainView.setSize(sf::Vector2f(viewWidth, viewHeight));
                 mainView.setCenter(0, 0);
-                window.setView(mainView);
+                mainView.zoom(zoom);
+
+                textView.setSize(sf::Vector2f(viewWidth, viewHeight));
+                textView.setCenter(viewWidth / 2, viewHeight / 2);
             }
             if (event.type == sf::Event::KeyPressed){
-                if (event.key.code == sf::Keyboard::S){
-                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)){
+                if (event.key.code == sf::Keyboard::Q) {
+                    if(event.key.control){
                         main_world.SaveChunks("DebugWorldSave");
+                    }
+                }
+                if (event.key.code == sf::Keyboard::Equal) {
+                    zoom *= 1.05;
+                    mainView.zoom(1.05);
+                }
+                if (event.key.code == sf::Keyboard::Dash) {
+                    zoom /= 1.05;
+                    mainView.zoom(1 / 1.05);
+                }
+            }
+            if (event.type == sf::Event::MouseWheelScrolled) {
+                if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
+                    if (event.mouseWheelScroll.delta < 0) {
+                        zoom *= 1.05;
+                        mainView.zoom(1.05);
+                    } else if (event.mouseWheelScroll.delta > 0) {
+                        zoom /= 1.05;
+                        mainView.zoom(1 / 1.05);
                     }
                 }
             }
@@ -123,7 +160,7 @@ int main() {
             std::to_string(1.0 / lastframetime) + '\n' +
             std::to_string(mainCharacter.GetPosition().x) + " " + std::to_string(mainCharacter.GetPosition().y));
 
-        window.setView(sf::View());
+        window.setView(textView);
         window.draw(text);
         window.display();
         // std::cin.get();

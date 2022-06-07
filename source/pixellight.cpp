@@ -22,37 +22,61 @@ public:
         flashlight_s = std::sqrt(800*800*2);
         sf::RenderTexture * mm_l; 
         std::cout << flashlight_s << '\n';
-        m_flashlightTexture.create(400, 400, settings);
+        float f = 10;
+        m_flashlightTexture.create(400 / f, 400 / f, settings);
         generateSpot(m_darkness);
 
         m_flashlight.setTexture(m_flashlightTexture.getTexture(), true);
-        m_flashlight.setOrigin({ 380, 200});
-        m_flashlight.setPosition(400, 400);
+        m_flashlight.setOrigin({ 380 / f, 200 / f});
+        m_flashlight.setPosition(400 / f, 400 / f);
+        m_flashlight.setScale(f, f);
 
         m_rectangle.setFillColor(sf::Color::Red);
-        m_rectangle.setPosition(300,200);
+        m_rectangle.setPosition(300 / f,200 / f);
 
         m_sprite.setTexture(m_layer->getTexture());
-        m_sprite.setOrigin({400.f, 400.f});
-        m_sprite.setPosition({400.f, 400.f});
+        m_sprite.setOrigin({400.f / f, 400.f / f});
+        m_sprite.setPosition({400.f / f, 400.f / f});
     }
 
     void generateSpot(int d)
     {
-        m_flashlightTexture.clear(sf::Color(0, 0, 0, 255));
+        // m_flashlightTexture.clear(sf::Color(0, 0, 0, 255));
+        // int il = 400;
+        // float itl = 200.f / 400;
+        // for (auto i = 0u; i < il; ++i)
+        // {
+        //     float index = static_cast<float>(i);
+        //     float radius = 200.f - (index * itl);
+        //     auto temp = sf::CircleShape{ radius, 1000};
+        //     // temp.scale(sf::Vector2f(2.0f, 2.0f));
+        //     temp.setOrigin(radius, radius);
+        //     float ratio = radius / 200;
+        //     temp.setFillColor({ 0u, 0u, 0u, static_cast<sf::Uint8>( 255 - (std::pow((255 - radius) / 255, d)) * 255 / d)});
+        //     temp.setPosition({ 400 - radius, 200});
+        //     // temp.setPosition({ 0, 0});
 
-        int il = 400;
-        float itl = 200.f / 400;
+        //     m_flashlightTexture.draw(temp, sf::BlendNone);
+        // }
+        float f = 10;
+        m_flashlightTexture.clear(sf::Color(0, 0, 0, 255));
+        int il = 400 / f;
+        float itl = 20.f / il;
         for (auto i = 0u; i < il; ++i)
         {
             float index = static_cast<float>(i);
-            float radius = 200.f - (index * itl);
+            float radius = 20.f - (index * itl);
+            // radius /= f;
             auto temp = sf::CircleShape{ radius, 1000};
+            // temp.scale(sf::Vector2f(2.0f, 2.0f));
             temp.setOrigin(radius, radius);
-            float alpha = 255 - (std::pow((255 - radius) / 255, d)) * 255 / d;
-            std::cout << radius << " " << alpha << '\n';
+            std::cout << radius << '\n';
+            float alpha;
+            alpha = 25 - (std::pow((25 - radius) / 25, d)) * 25 / d;
+            alpha *= 10;
+            std::cout << alpha << '\n';
             temp.setFillColor({ 0u, 0u, 0u, static_cast<sf::Uint8>(alpha)});
-            temp.setPosition({ 400 - radius, 200});
+            temp.setPosition({ 400 / f - radius, 200 / f});
             // temp.setPosition({ 0, 0});
 
             m_flashlightTexture.draw(temp, sf::BlendNone);
@@ -66,6 +90,7 @@ public:
         // m_flashlightTexture.draw(line, 4, sf::Lines);
         m_flashlightTexture.display();
         m_flashlightTexture.getTexture().copyToImage().saveToFile("dumpfiles/flashlightrender.png");
+        // m_flashlightTexture.setSmooth(true);
     }
 
     void run()

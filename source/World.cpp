@@ -86,7 +86,7 @@ void Character::HandleEvent(sf::Event &event) {
                 pressed_[3] = true;
             }
             if (event.key.code == sf::Keyboard::LShift) {
-                speed_ = 10;
+                speed_ = 20;
             }
             if (event.key.code == sf::Keyboard::LControl) {
                 speed_ = 2;
