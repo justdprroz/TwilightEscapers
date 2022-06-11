@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 if (UNIX)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../build)
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=znver3")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
     include_directories("source")
     find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
