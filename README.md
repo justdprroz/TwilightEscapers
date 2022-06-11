@@ -28,8 +28,20 @@ This will be a RPG game about some guys escaping  \*Twilight\*(Some strange plac
 
 ### Windows:
 __Currently unsupported__
+
 If you managed to build it:
 1) Somehow move all necessary files to build directory (refer to build scripts)
 2) Run it
     - Press ```Run``` in Visual Studio (if you're building using app)
     - Navigate to ```build``` directory and run ```twe.exe```
+
+## How to play
+__Currently game lacks any content and features__
+- You can move using ```W```, ```A```, ```S```, ```D```
+- Press ```Shift``` to speed up, Press ```Left Control``` to slow down
+- Press ```Enter``` to enable \*Flight\* (Very high speed, primarily for debugging)
+- Press ```F3``` or ```BackSlash``` to toggle debug info
+
+## How to contribute
+- Create issues if needed
+- You can suggest improvements or any other features or bugfixes
