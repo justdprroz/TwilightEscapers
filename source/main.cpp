@@ -7,11 +7,12 @@
 #include <utility>
 #include <Utils.hpp>
 
-
+// Global constants
 const int TEXTURE_SIZE = 16;
 const int TILE_SIZE = 32;//32
 
-
+// Local constants
+const int RENDER_DISTANCE = 2;
 
 void Terminal() {
 
@@ -20,6 +21,9 @@ void Terminal() {
 int main() {
     sf::Font debugfont;
     debugfont.loadFromFile("assets/fonts/CascadiaCode.ttf");
+    
+    // Some variables
+    bool debug = false;
 
     // Some variables for window
     std::string title = "EscapeFromTwilight ";
@@ -62,13 +66,7 @@ int main() {
     main_world.SetSeed(420);
     main_world.NoiseInit();
 
-    const int render_distance = 2;
-    for(int i = -render_distance; i < render_distance; i++){
-        for(int j = -render_distance; j < render_distance; j++){
-            main_world.PlaceChunk({i, j});
-            main_world.GenerateChunk({i, j});
-        }
-    }
+    // main_world.LoadChunks("DebugWorldSave");
 
     // Character
     Character mainCharacter(0, {0.0f, 0.0f});
@@ -124,6 +122,9 @@ int main() {
                     zoom /= 1.05;
                     mainView.zoom(1 / 1.05);
                 }
+                if (event.key.code == sf::Keyboard::F3 || event.key.code == sf::Keyboard::BackSlash) {
+                    debug = !debug;
+                }
             }
             if (event.type == sf::Event::MouseWheelScrolled) {
                 if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
@@ -137,33 +138,94 @@ int main() {
                 }
             }
         }
+
+        // Invoke Updates
         mainCharacter.Update(lastframetime);
-
-        // RenderCharacter.Update(&c, texture_manager);
-
         sf::Vector2f pos = mainCharacter.GetPosition();
+        sf::Vector2f currentChunkPosition = { std::floor(pos.x / 16), std::floor(pos.y / 16) };
 
-        window.setView(mainView);
+        for (int o_x = -RENDER_DISTANCE; o_x <= RENDER_DISTANCE; o_x++) {
+            for (int o_y = -RENDER_DISTANCE; o_y <= RENDER_DISTANCE; o_y++) {
+                sf::Vector2i currentChunk = sf::Vector2i(currentChunkPosition) + sf::Vector2i(o_x, o_y);
+                if (!main_world.IsChunkExist(currentChunk)) {
+                    main_world.PlaceChunk(currentChunk);
+                    main_world.GenerateChunk(currentChunk);
+                }
+            }
+        }
+
+        // Clear Window
         window.clear(sf::Color::Black);
 
-        mainRenderWorld.Update(main_world, texture_manager);
-        
+        // Set positioned view
+        window.setView(mainView);
+
+        // Draw game staff
+        mainRenderWorld.Update(main_world, texture_manager); 
         mainRenderWorld.setPosition(sf::Vector2f(-pos.x * TILE_SIZE, -pos.y * TILE_SIZE));
-        // mainRenderWorld.rotate(10.0f * lastframetime);
-
         window.draw(mainRenderWorld);
-        // cr.setPosition(sf::Vector2f(-pos.x * TILE_SIZE, -pos.y * TILE_SIZE));
-        // window.draw(cr);
-        
 
-        text.setString(
-            std::to_string(1.0 / lastframetime) + '\n' +
-            std::to_string(mainCharacter.GetPosition().x) + " " + std::to_string(mainCharacter.GetPosition().y));
+        // Draw debug staff
 
+        if (debug) {
+            sf::Vector2f manualRenderOffset = { -pos.x * TILE_SIZE, -pos.y * TILE_SIZE };
+            sf::Vertex quad[] = {
+                sf::Vertex(
+                    sf::Vector2f(
+                        manualRenderOffset.x + currentChunkPosition.x * 16 * TILE_SIZE,
+                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE
+                    ),
+                    sf::Color::Red
+                ),
+                sf::Vertex(
+                    sf::Vector2f(
+                        manualRenderOffset.x + (currentChunkPosition.x + 1) * 16 * TILE_SIZE,
+                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE
+                    ),
+                    sf::Color::Blue
+                ),
+                sf::Vertex(
+                    sf::Vector2f(
+                        manualRenderOffset.x + (currentChunkPosition.x + 1) * 16 * TILE_SIZE,
+                        manualRenderOffset.y + (currentChunkPosition.y + 1) * 16 * TILE_SIZE
+                    ),
+                    sf::Color::Red
+                ),
+                sf::Vertex(
+                    sf::Vector2f(
+                        manualRenderOffset.x + currentChunkPosition.x * 16 * TILE_SIZE,
+                        manualRenderOffset.y + (currentChunkPosition.y + 1) * 16 * TILE_SIZE
+                    ),
+                    sf::Color::Blue
+                ),
+                sf::Vertex(
+                    sf::Vector2f(
+                        manualRenderOffset.x + currentChunkPosition.x * 16 * TILE_SIZE,
+                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE
+                    ),
+                    sf::Color::Red
+                ),
+            };
+            window.draw(quad, 5, sf::LineStrip);
+        }
+
+        // Set inteface view
         window.setView(textView);
-        window.draw(text);
+
+        // Draw game staff
+
+        // Draw debug staff
+        if (debug) {
+            text.setString(
+                std::to_string(1.0 / lastframetime) + '\n' +
+                std::to_string(mainCharacter.GetPosition().x) + " " + std::to_string(mainCharacter.GetPosition().y)
+            );
+
+            window.draw(text);
+        }
+
+        // Display everything drawn
         window.display();
-        // std::cin.get();
     }
 
     // mainWorld.SaveChunks("World1");

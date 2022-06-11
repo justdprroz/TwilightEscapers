@@ -72,7 +72,7 @@ public:
             temp.setOrigin(radius, radius);
             std::cout << radius << '\n';
             float alpha;
-            alpha = 25 - (std::pow((25 - radius) / 25, d)) * 25 / d;
+            alpha = 25 - (std::pow((25 - radius) / 25, d)) * 20 / d;
             alpha *= 10;
             std::cout << alpha << '\n';
             temp.setFillColor({ 0u, 0u, 0u, static_cast<sf::Uint8>(alpha)});
