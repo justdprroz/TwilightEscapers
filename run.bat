@@ -1,4 +1,4 @@
-call "run.bat"
+call "build.bat"
 cd build
 "twe.exe"
 cd ..
