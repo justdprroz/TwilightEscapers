@@ -1,4 +1,4 @@
 #!/bin/bash
-./buildLinux.sh
+./build.sh
 cd build
 ./twe

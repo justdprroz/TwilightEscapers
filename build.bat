@@ -14,4 +14,7 @@ rem Generate cmake files
 cmake ..
 
 rem Build projects
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Current\Bin\MSBuild.exe" ".\Twilight Escapers.sln" /property:Configuration=Release
+"MSBuild.exe" ".\Twilight Escapers.sln" /property:Configuration=Release
+
+rem Return to project root
+cd ..
