@@ -12,15 +12,15 @@ const int TEXTURE_SIZE = 16;
 const int TILE_SIZE = 32;//32
 
 // Local constants
-const int RENDER_DISTANCE = 2;
+const int RENDER_DISTANCE = 8;
 
 void Terminal() {
 
 }
 
 int main() {
-    sf::Font debugfont;
-    debugfont.loadFromFile("assets/fonts/CascadiaCode.ttf");
+    sf::Font debugFont;
+    debugFont.loadFromFile("assets/fonts/CascadiaCode.ttf");
     
     // Some variables
     bool debug = false;
@@ -50,12 +50,15 @@ int main() {
     settings.antialiasingLevel = 0;
 
     // Create main render Window
-    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::Default, settings);
+    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::None, settings);
     window.setView(mainView);
     window.setFramerateLimit(256); // check when you want
     // window.setVerticalSyncEnabled(true); // check when you want
     // bool fullscreen = false; // check when you want
     window.setKeyRepeatEnabled(false);
+
+    sf::RenderTexture renderTexture;
+    renderTexture.create(winWidth, winHeight);
 
     // Clocks and time
     sf::Clock mainRenderClock;
@@ -78,11 +81,14 @@ int main() {
 
     // Debug gui
     sf::Text text;
-    text.setFont(debugfont);
+    text.setFont(debugFont);
     text.setCharacterSize(16);
     text.setFillColor(sf::Color::Black);
     text.setOutlineColor(sf::Color::White);
     text.setOutlineThickness(1);
+
+    sf::Shader sh;
+    sh.loadFromFile("frag.glsl", sf::Shader::Fragment);
 
     while (window.isOpen()) {
         float lastframetime = mainRenderClock.restart().asSeconds();
@@ -163,7 +169,10 @@ int main() {
         // Draw game staff
         mainRenderWorld.Update(main_world, texture_manager); 
         mainRenderWorld.setPosition(sf::Vector2f(-pos.x * TILE_SIZE, -pos.y * TILE_SIZE));
-        window.draw(mainRenderWorld);
+
+        renderTexture.setView(mainView);
+        renderTexture.clear();
+        renderTexture.draw(mainRenderWorld);
 
         // Draw debug staff
 
@@ -206,8 +215,15 @@ int main() {
                     sf::Color::Red
                 ),
             };
-            window.draw(quad, 5, sf::LineStrip);
+            renderTexture.draw(quad, 5, sf::LineStrip);
         }
+        renderTexture.display();
+
+        sf::Sprite sprite;
+        sprite.setTexture(renderTexture.getTexture());
+        sprite.setPosition({-winWidth / 2, -winHeight / 2});
+
+        window.draw(sprite, &sh);
 
         // Set inteface view
         window.setView(textView);
