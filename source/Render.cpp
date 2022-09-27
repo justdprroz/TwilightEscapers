@@ -27,7 +27,7 @@ void TextureManager::LoadEntityTileset() {
 }
 
 void TextureManager::LoadCharacters() {
-    for(int i = 0; i < CHARACTERS_AMOUNT; i++){ 
+    for(int i = 0; i < 16; i++){ 
         characters_textures_[i] = sf::Texture();
         characters_textures_[i].loadFromFile(assets_path_ + "/textures/entity/characters/" + std::to_string(i) + ".png");
     }

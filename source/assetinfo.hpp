@@ -1,1 +1,0 @@
-const int CHARACTERS_AMOUNT = 16;

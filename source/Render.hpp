@@ -11,14 +11,11 @@
 #include <World.hpp>
 #include <Utils.hpp>
 
-// SOME VARS TODO: Create Assets management system
-#include "assetinfo.hpp"
-
 // Main rendering constants
 extern const int TEXTURE_SIZE;
 extern const int TILE_SIZE;
 
-// Stores all textures, layers, and everything related to them TODO: Create "AssetsManager" for everything
+// Stores all textures, layers, and everything related to them
 class TextureManager {
 public:
     // Constructors
@@ -39,7 +36,7 @@ private:
     // Atlases with textures
     sf::Texture block_tileset_;
     sf::Texture entity_tileset_;
-    sf::Texture characters_textures_[CHARACTERS_AMOUNT];
+    sf::Texture characters_textures_[16];
 };
 
 // Implements Custom Renderer for Chunks

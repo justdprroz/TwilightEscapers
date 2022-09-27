@@ -6,6 +6,8 @@
 #include <Render.hpp>
 #include <utility>
 #include <Utils.hpp>
+#include <algorithm>
+#include <csignal>
 
 // Global constants
 const int TEXTURE_SIZE = 16;
@@ -52,7 +54,7 @@ int main() {
     // Create main render Window
     sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::None, settings);
     window.setView(mainView);
-    window.setFramerateLimit(256); // check when you want
+    // window.setFramerateLimit(256); // check when you want
     // window.setVerticalSyncEnabled(true); // check when you want
     // bool fullscreen = false; // check when you want
     window.setKeyRepeatEnabled(false);
@@ -88,7 +90,9 @@ int main() {
     text.setOutlineThickness(1);
 
     sf::Shader sh;
-    sh.loadFromFile("frag.glsl", sf::Shader::Fragment);
+    sh.loadFromFile("assets/shaders/grayscale.frag", sf::Shader::Fragment);
+    float grayscale = 1.0;
+    sh.setUniform("u_colorFactor", LinearInterpolation(grayscale, 0.f, 2.f, 0.f, 1.f));
 
     while (window.isOpen()) {
         float lastframetime = mainRenderClock.restart().asSeconds();
@@ -121,12 +125,18 @@ int main() {
                     }
                 }
                 if (event.key.code == sf::Keyboard::Equal) {
-                    zoom *= 1.05;
-                    mainView.zoom(1.05);
+                    grayscale += 0.1;
+                    grayscale = std::clamp(grayscale, 0.f, 4.f);
+                    sh.setUniform("u_colorFactor", LinearInterpolation(grayscale, 0.f, 2.f, 0.f, 1.f));
+                    // zoom *= 1.05;
+                    // mainView.zoom(1.05);
                 }
                 if (event.key.code == sf::Keyboard::Dash) {
-                    zoom /= 1.05;
-                    mainView.zoom(1 / 1.05);
+                    grayscale -= 0.1;
+                    grayscale = std::clamp(grayscale, 0.f, 4.f);
+                    sh.setUniform("u_colorFactor", LinearInterpolation(grayscale, 0.f, 2.f, 0.f, 1.f));
+                    // zoom /= 1.05;
+                    // mainView.zoom(1 / 1.05);
                 }
                 if (event.key.code == sf::Keyboard::F3 || event.key.code == sf::Keyboard::BackSlash) {
                     debug = !debug;
@@ -164,7 +174,7 @@ int main() {
         window.clear(sf::Color::Black);
 
         // Set positioned view
-        window.setView(mainView);
+        window.setView(sf::View({0, 0}, {static_cast<float>(winWidth), static_cast<float>(winHeight)}));
 
         // Draw game staff
         mainRenderWorld.Update(main_world, texture_manager); 
@@ -221,7 +231,7 @@ int main() {
 
         sf::Sprite sprite;
         sprite.setTexture(renderTexture.getTexture());
-        sprite.setPosition({-winWidth / 2, -winHeight / 2});
+        sprite.setPosition({static_cast<float>(-winWidth) / 2, static_cast<float>(-winHeight) / 2});
 
         window.draw(sprite, &sh);
 
@@ -234,7 +244,8 @@ int main() {
         if (debug) {
             text.setString(
                 std::to_string(1.0 / lastframetime) + '\n' +
-                std::to_string(mainCharacter.GetPosition().x) + " " + std::to_string(mainCharacter.GetPosition().y)
+                std::to_string(mainCharacter.GetPosition().x) + " " + std::to_string(mainCharacter.GetPosition().y) + '\n' +
+                std::to_string(grayscale / 2)
             );
 
             window.draw(text);
@@ -244,6 +255,7 @@ int main() {
         window.display();
     }
 
+    std::raise(11);
     // mainWorld.SaveChunks("World1");
     return 0;
 }
