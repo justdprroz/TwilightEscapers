@@ -1,0 +1,2 @@
+[submodule "sequoia-engine"]
+	url = git@github.com:justdprroz/sequoia-engine.git
