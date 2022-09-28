@@ -49,7 +49,7 @@ int main() {
 
     // Setting to explicitly disable AA
     sf::ContextSettings settings;
-    settings.antialiasingLevel = 0;
+    settings.antialiasingLevel = 16;
 
     // Create main render Window
     sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::None, settings);
@@ -255,7 +255,7 @@ int main() {
         window.display();
     }
 
-    std::raise(11);
+    std::raise(SIGSEGV);
     // mainWorld.SaveChunks("World1");
     return 0;
 }

@@ -1,9 +1,13 @@
-# project files to be ignored
+# Temporary files to be ignored
 tmp
-build
+
+# Binaries to be ignored
+twe
+
 # VS and VScode files
 .vscode
 .vs
+
 # CLion files
 .idea
 cmake-build-debug

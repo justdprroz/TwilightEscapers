@@ -4,23 +4,29 @@ project("Twilight Escapers")
 set(CMAKE_CXX_STANDARD 17)
 
 if (UNIX)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../build)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
-    include_directories("source")
-    find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
-
-    add_executable(twe source/main.cpp source/Render.cpp source/World.cpp source/Renderer.cpp)
-    target_link_libraries(twe sfml-graphics sfml-window sfml-system)
+else()
+    set(SFML_DIR "C:/SFML/lib/cmake/SFML")
 endif (UNIX)
 
-if (MSVC)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/../build)
-    set(SFML_DIR "C:/SFML/lib/cmake/SFML")
+# NOT MAINTAINED CURRENTLY
+# if (MSVC)
+#     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/../build)
+# endif(MSVC)
 
-    include_directories("source")
-    find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
+include_directories("src")
 
-    add_executable(twe source/main.cpp source/Render.cpp source/World.cpp)
-    target_link_libraries(twe sfml-graphics sfml-window sfml-system)
-endif(MSVC)
+set(
+    TWE_SOURCES
+    src/Render.cpp
+    src/Renderer.cpp
+    src/World.cpp
+    src/main.cpp
+)
+
+message("TWE sources are: " ${TWE_SOURCES})
+
+find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
+add_executable(twe ${TWE_SOURCES})
+target_link_libraries(twe sfml-graphics sfml-window sfml-system)
