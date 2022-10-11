@@ -92,6 +92,7 @@ int main() {
     sf::Shader sh;
     sh.loadFromFile("assets/shaders/grayscale.frag", sf::Shader::Fragment);
     float grayscale = 1.0;
+
     sh.setUniform("u_colorFactor", LinearInterpolation(grayscale, 0.f, 2.f, 0.f, 1.f));
 
     while (window.isOpen()) {
@@ -153,6 +154,9 @@ int main() {
                     }
                 }
             }
+            // if (event.type == sf::Event::MouseMoved) {
+            //     sh.setUniform("mouse_pos", sf::Vector2f(event.mouseMove.x, event.mouseMove.y));
+            // }
         }
 
         // Invoke Updates
@@ -183,9 +187,16 @@ int main() {
         renderTexture.setView(mainView);
         renderTexture.clear();
         renderTexture.draw(mainRenderWorld);
+        renderTexture.display();
 
+        sf::Sprite sprite;
+        sprite.setTexture(renderTexture.getTexture());
+        sprite.setPosition({static_cast<float>(-winWidth) / 2, static_cast<float>(-winHeight) / 2});
+
+        window.draw(sprite, &sh);
+
+        renderTexture.clear(sf::Color::Transparent);
         // Draw debug staff
-
         if (debug) {
             sf::Vector2f manualRenderOffset = { -pos.x * TILE_SIZE, -pos.y * TILE_SIZE };
             sf::Vertex quad[] = {
@@ -229,11 +240,8 @@ int main() {
         }
         renderTexture.display();
 
-        sf::Sprite sprite;
         sprite.setTexture(renderTexture.getTexture());
-        sprite.setPosition({static_cast<float>(-winWidth) / 2, static_cast<float>(-winHeight) / 2});
-
-        window.draw(sprite, &sh);
+        window.draw(sprite);
 
         // Set inteface view
         window.setView(textView);
