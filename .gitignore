@@ -3,6 +3,7 @@ tmp
 
 # Binaries to be ignored
 twe
+twe.exe
 
 # VS and VScode files
 .vscode
