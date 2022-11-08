@@ -2,8 +2,7 @@
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include <World.hpp>
-#include <Render.hpp>
+#include <Sequoia.hpp>
 #include <utility>
 #include <Utils.hpp>
 #include <algorithm>
@@ -73,8 +72,8 @@ int main() {
 
     // main_world.LoadChunks("DebugWorldSave");
 
-    // Character
-    Character mainCharacter(0, {0.0f, 0.0f});
+    // Player
+    Player mainCharacter(0, {0.0f, 0.0f});
     main_world.SummonEntity(mainCharacter);
 
     // Rendering
