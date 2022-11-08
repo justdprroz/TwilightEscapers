@@ -2,25 +2,26 @@
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include <World.hpp>
-#include <Render.hpp>
+#include <Sequoia.hpp>
 #include <utility>
 #include <Utils.hpp>
+#include <algorithm>
+#include <csignal>
 
 // Global constants
 const int TEXTURE_SIZE = 16;
 const int TILE_SIZE = 32;//32
 
 // Local constants
-const int RENDER_DISTANCE = 2;
+const int RENDER_DISTANCE = 8;
 
 void Terminal() {
 
 }
 
 int main() {
-    sf::Font debugfont;
-    debugfont.loadFromFile("assets/fonts/CascadiaCode.ttf");
+    sf::Font debugFont;
+    debugFont.loadFromFile("assets/fonts/CascadiaCode.ttf");
     
     // Some variables
     bool debug = false;
@@ -47,15 +48,18 @@ int main() {
 
     // Setting to explicitly disable AA
     sf::ContextSettings settings;
-    settings.antialiasingLevel = 0;
+    settings.antialiasingLevel = 16;
 
     // Create main render Window
-    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::Default, settings);
+    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::None, settings);
     window.setView(mainView);
-    window.setFramerateLimit(256); // check when you want
+    // window.setFramerateLimit(256); // check when you want
     // window.setVerticalSyncEnabled(true); // check when you want
     // bool fullscreen = false; // check when you want
     window.setKeyRepeatEnabled(false);
+
+    sf::RenderTexture renderTexture;
+    renderTexture.create(winWidth, winHeight);
 
     // Clocks and time
     sf::Clock mainRenderClock;
@@ -68,8 +72,8 @@ int main() {
 
     // main_world.LoadChunks("DebugWorldSave");
 
-    // Character
-    Character mainCharacter(0, {0.0f, 0.0f});
+    // Player
+    Player mainCharacter(0, {0.0f, 0.0f});
     main_world.SummonEntity(mainCharacter);
 
     // Rendering
@@ -78,11 +82,17 @@ int main() {
 
     // Debug gui
     sf::Text text;
-    text.setFont(debugfont);
+    text.setFont(debugFont);
     text.setCharacterSize(16);
     text.setFillColor(sf::Color::Black);
     text.setOutlineColor(sf::Color::White);
     text.setOutlineThickness(1);
+
+    sf::Shader sh;
+    sh.loadFromFile("assets/shaders/grayscale.frag", sf::Shader::Fragment);
+    float grayscale = 1.0;
+
+    sh.setUniform("u_colorFactor", LinearInterpolation(grayscale, 0.f, 2.f, 0.f, 1.f));
 
     while (window.isOpen()) {
         float lastframetime = mainRenderClock.restart().asSeconds();
@@ -115,12 +125,18 @@ int main() {
                     }
                 }
                 if (event.key.code == sf::Keyboard::Equal) {
-                    zoom *= 1.05;
-                    mainView.zoom(1.05);
+                    grayscale += 0.1;
+                    grayscale = std::clamp(grayscale, 0.f, 4.f);
+                    sh.setUniform("u_colorFactor", LinearInterpolation(grayscale, 0.f, 2.f, 0.f, 1.f));
+                    // zoom *= 1.05;
+                    // mainView.zoom(1.05);
                 }
                 if (event.key.code == sf::Keyboard::Dash) {
-                    zoom /= 1.05;
-                    mainView.zoom(1 / 1.05);
+                    grayscale -= 0.1;
+                    grayscale = std::clamp(grayscale, 0.f, 4.f);
+                    sh.setUniform("u_colorFactor", LinearInterpolation(grayscale, 0.f, 2.f, 0.f, 1.f));
+                    // zoom /= 1.05;
+                    // mainView.zoom(1 / 1.05);
                 }
                 if (event.key.code == sf::Keyboard::F3 || event.key.code == sf::Keyboard::BackSlash) {
                     debug = !debug;
@@ -137,6 +153,9 @@ int main() {
                     }
                 }
             }
+            // if (event.type == sf::Event::MouseMoved) {
+            //     sh.setUniform("mouse_pos", sf::Vector2f(event.mouseMove.x, event.mouseMove.y));
+            // }
         }
 
         // Invoke Updates
@@ -158,15 +177,25 @@ int main() {
         window.clear(sf::Color::Black);
 
         // Set positioned view
-        window.setView(mainView);
+        window.setView(sf::View({0, 0}, {static_cast<float>(winWidth), static_cast<float>(winHeight)}));
 
         // Draw game staff
         mainRenderWorld.Update(main_world, texture_manager); 
         mainRenderWorld.setPosition(sf::Vector2f(-pos.x * TILE_SIZE, -pos.y * TILE_SIZE));
-        window.draw(mainRenderWorld);
 
+        renderTexture.setView(mainView);
+        renderTexture.clear();
+        renderTexture.draw(mainRenderWorld);
+        renderTexture.display();
+
+        sf::Sprite sprite;
+        sprite.setTexture(renderTexture.getTexture());
+        sprite.setPosition({static_cast<float>(-winWidth) / 2, static_cast<float>(-winHeight) / 2});
+
+        window.draw(sprite, &sh);
+
+        renderTexture.clear(sf::Color::Transparent);
         // Draw debug staff
-
         if (debug) {
             sf::Vector2f manualRenderOffset = { -pos.x * TILE_SIZE, -pos.y * TILE_SIZE };
             sf::Vertex quad[] = {
@@ -206,8 +235,12 @@ int main() {
                     sf::Color::Red
                 ),
             };
-            window.draw(quad, 5, sf::LineStrip);
+            renderTexture.draw(quad, 5, sf::LineStrip);
         }
+        renderTexture.display();
+
+        sprite.setTexture(renderTexture.getTexture());
+        window.draw(sprite);
 
         // Set inteface view
         window.setView(textView);
@@ -218,7 +251,8 @@ int main() {
         if (debug) {
             text.setString(
                 std::to_string(1.0 / lastframetime) + '\n' +
-                std::to_string(mainCharacter.GetPosition().x) + " " + std::to_string(mainCharacter.GetPosition().y)
+                std::to_string(mainCharacter.GetPosition().x) + " " + std::to_string(mainCharacter.GetPosition().y) + '\n' +
+                std::to_string(grayscale / 2)
             );
 
             window.draw(text);
@@ -228,6 +262,7 @@ int main() {
         window.display();
     }
 
+    std::raise(SIGSEGV);
     // mainWorld.SaveChunks("World1");
     return 0;
 }
