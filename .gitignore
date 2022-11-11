@@ -2,8 +2,10 @@
 tmp
 
 # Binaries to be ignored
-twe
-twe.exe
+*.exe
+*.dll
+Release/
+Debug/
 
 # VS and VScode files
 .vscode
