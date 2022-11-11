@@ -14,22 +14,26 @@ endif()
 
 # Set variables and compiler flags (Only these compilers supported)
 if (UNIX OR MINGW)
-    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+    # set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+    # set(CMAKE_CXX_FLAGS_DEBUG "-g")
+    # set(CMAKE_CXX_FLAGS_RELEASE "-O3")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 else()
-    message(FATAL_ERROR "Your compiler is unsupported. Use supported one (GCC or MinGW) or modify source code")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+    message(WARNING "Your compiler may be unsupported. Use supported one (GCC or MinGW) or modify source code")
 endif (UNIX OR MINGW)
 
 # Find SFML and include it
-find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
-include_directories(${SFML_DIR}/include)
+# find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
+# include_directories(${SFML_DIR}/include)
+# Build SFML and include it
+add_subdirectory(${CMAKE_SOURCE_DIR}/SFML)
 
 # Include and build engine
 add_subdirectory(${CMAKE_SOURCE_DIR}/sequoia-engine)
 include_directories(${CMAKE_SOURCE_DIR}/sequoia-engine/src)
 target_link_libraries(sequoia sfml-graphics sfml-window sfml-system)
+
 
 # Include and build executable
 include_directories("src")
