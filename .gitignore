@@ -1,16 +1,6 @@
-# Temporary files to be ignored
+# Temporary CMake files
 tmp
 
-# Binaries to be ignored
-*.exe
-*.dll
-Release/
-Debug/
-
-# VS and VScode files
-.vscode
-.vs
-
-# CLion files
-.idea
-cmake-build-debug
+# Binaries
+bin
+dev

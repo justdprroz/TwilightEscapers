@@ -11,13 +11,15 @@ set (CMAKE_CXX_STANDARD 20)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
+message(NOTICE "Build type is: " ${CMAKE_BUILD_TYPE})
 
 # Set variables and compiler flags (Only these compilers supported)
 if (UNIX OR MINGW)
     set(CMAKE_CXX_FLAGS "-Wall -Wextra")
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/bin)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/dev)
     if (MINGW)
         set(
             STATIC_LIBS
@@ -26,14 +28,12 @@ if (UNIX OR MINGW)
         )
     endif(MINGW)
 else()
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/bin)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/dev)
     message(WARNING "Your compiler may be unsupported. Use supported one (GCC or MinGW) or modify source code")
 endif (UNIX OR MINGW)
 
-# Find SFML and include it
-# find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
-# include_directories(${SFML_DIR}/include)
-# Build SFML and include it
+# Build SFML as static libs and include it
 set(BUILD_SHARED_LIBS FALSE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/SFML)
 
