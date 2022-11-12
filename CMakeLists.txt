@@ -17,9 +17,9 @@ if (UNIX OR MINGW)
     # set(CMAKE_CXX_FLAGS "-Wall -Wextra")
     # set(CMAKE_CXX_FLAGS_DEBUG "-g")
     # set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 else()
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
     message(WARNING "Your compiler may be unsupported. Use supported one (GCC or MinGW) or modify source code")
 endif (UNIX OR MINGW)
 
@@ -27,6 +27,7 @@ endif (UNIX OR MINGW)
 # find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 # include_directories(${SFML_DIR}/include)
 # Build SFML and include it
+set(BUILD_SHARED_LIBS FALSE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/SFML)
 
 # Include and build engine
@@ -42,4 +43,4 @@ set(
     src/main.cpp
 )
 add_executable(twe ${TWE_SOURCES})
-target_link_libraries(twe sfml-graphics sfml-window sfml-system sequoia)
+target_link_libraries(twe sfml-graphics sfml-window sfml-system sequoia -static)
