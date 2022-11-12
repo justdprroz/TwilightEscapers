@@ -14,10 +14,17 @@ endif()
 
 # Set variables and compiler flags (Only these compilers supported)
 if (UNIX OR MINGW)
-    # set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-    # set(CMAKE_CXX_FLAGS_DEBUG "-g")
-    # set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+    if (MINGW)
+        set(
+            STATIC_LIBS
+            -static-libstdc++
+            -static-libgcc
+        )
+    endif(MINGW)
 else()
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
     message(WARNING "Your compiler may be unsupported. Use supported one (GCC or MinGW) or modify source code")
@@ -43,4 +50,4 @@ set(
     src/main.cpp
 )
 add_executable(twe ${TWE_SOURCES})
-target_link_libraries(twe sfml-graphics sfml-window sfml-system sequoia -static)
+target_link_libraries(twe sfml-graphics sfml-window sfml-system ${STATIC_LIBS} sequoia)
