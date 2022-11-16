@@ -7,22 +7,31 @@
 #include <Utils.hpp>
 #include <algorithm>
 #include <csignal>
+#include <sstream>
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 // Global constants
 const int TEXTURE_SIZE = 16;
-const int TILE_SIZE = 32;//32
+const int TILE_SIZE = 32; // 32
 
 // Local constants
 const int RENDER_DISTANCE = 8;
 
-void Terminal() {
-
+void Terminal()
+{
 }
 
-int main() {
+int main()
+{
+    // std::ifstream f("config.json");
+    // nlohmann::json data = nlohmann::json::parse(f);
+
+    // std::cout << data << '\n';
+
     sf::Font debugFont;
     debugFont.loadFromFile("assets/fonts/CascadiaCode.ttf");
-    
+
     // Some variables
     bool debug = false;
 
@@ -51,11 +60,11 @@ int main() {
     settings.antialiasingLevel = 16;
 
     // Create main render Window
-    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::None, settings);
+    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::Default, settings);
     window.setView(mainView);
     // window.setFramerateLimit(256); // check when you want
     // window.setVerticalSyncEnabled(true); // check when you want
-    // bool fullscreen = false; // check when you want
+    // bool fullscreen = true; // check when you want
     window.setKeyRepeatEnabled(false);
 
     sf::RenderTexture renderTexture;
@@ -73,7 +82,7 @@ int main() {
     // main_world.LoadChunks("DebugWorldSave");
 
     // Player
-    Player mainCharacter(0, {0.0f, 0.0f});
+    Player mainCharacter(1, {0.0f, 0.0f});
     main_world.SummonEntity(mainCharacter);
 
     // Rendering
@@ -94,15 +103,19 @@ int main() {
 
     sh.setUniform("u_colorFactor", LinearInterpolation(grayscale, 0.f, 2.f, 0.f, 1.f));
 
-    while (window.isOpen()) {
+    while (window.isOpen())
+    {
         float lastframetime = mainRenderClock.restart().asSeconds();
         sf::Event event;
-        while (window.pollEvent(event)) {
+        while (window.pollEvent(event))
+        {
             mainCharacter.HandleEvent(event);
-            if (event.type == sf::Event::Closed) {
+            if (event.type == sf::Event::Closed)
+            {
                 window.close();
             }
-            if (event.type == sf::Event::Resized){
+            if (event.type == sf::Event::Resized)
+            {
 
                 std::cout << "Resize invoked\n";
 
@@ -117,56 +130,72 @@ int main() {
 
                 textView.setSize(sf::Vector2f(viewWidth, viewHeight));
                 textView.setCenter(viewWidth / 2, viewHeight / 2);
+
+                renderTexture.create(winWidth, winHeight);
             }
-            if (event.type == sf::Event::KeyPressed){
-                if (event.key.code == sf::Keyboard::Q) {
-                    if(event.key.control){
+            if (event.type == sf::Event::KeyPressed)
+            {
+                if (event.key.code == sf::Keyboard::Q)
+                {
+                    if (event.key.control)
+                    {
                         main_world.SaveChunks("DebugWorldSave");
                     }
                 }
-                if (event.key.code == sf::Keyboard::Equal) {
+                if (event.key.code == sf::Keyboard::Equal)
+                {
                     grayscale += 0.1;
-                    grayscale = std::clamp(grayscale, 0.f, 4.f);
+                    grayscale = std::clamp(grayscale, 0.f, 2.f);
                     sh.setUniform("u_colorFactor", LinearInterpolation(grayscale, 0.f, 2.f, 0.f, 1.f));
                     // zoom *= 1.05;
                     // mainView.zoom(1.05);
                 }
-                if (event.key.code == sf::Keyboard::Dash) {
+                if (event.key.code == sf::Keyboard::Dash)
+                {
                     grayscale -= 0.1;
-                    grayscale = std::clamp(grayscale, 0.f, 4.f);
+                    grayscale = std::clamp(grayscale, 0.f, 2.f);
                     sh.setUniform("u_colorFactor", LinearInterpolation(grayscale, 0.f, 2.f, 0.f, 1.f));
                     // zoom /= 1.05;
                     // mainView.zoom(1 / 1.05);
                 }
-                if (event.key.code == sf::Keyboard::F3 || event.key.code == sf::Keyboard::BackSlash) {
+                if (event.key.code == sf::Keyboard::F3 || event.key.code == sf::Keyboard::BackSlash)
+                {
                     debug = !debug;
                 }
             }
-            if (event.type == sf::Event::MouseWheelScrolled) {
-                if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
-                    if (event.mouseWheelScroll.delta < 0) {
+            if (event.type == sf::Event::MouseWheelScrolled)
+            {
+                if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel)
+                {
+                    if (event.mouseWheelScroll.delta < 0)
+                    {
                         zoom *= 1.05;
                         mainView.zoom(1.05);
-                    } else if (event.mouseWheelScroll.delta > 0) {
+                    }
+                    else if (event.mouseWheelScroll.delta > 0)
+                    {
                         zoom /= 1.05;
                         mainView.zoom(1 / 1.05);
                     }
                 }
             }
-            // if (event.type == sf::Event::MouseMoved) {
-            //     sh.setUniform("mouse_pos", sf::Vector2f(event.mouseMove.x, event.mouseMove.y));
-            // }
+            //// if (event.type == sf::Event::MouseMoved) {
+            ////     sh.setUniform("mouse_pos", sf::Vector2f(event.mouseMove.x, event.mouseMove.y));
+            //// }
         }
 
         // Invoke Updates
         mainCharacter.Update(lastframetime);
         sf::Vector2f pos = mainCharacter.GetPosition();
-        sf::Vector2f currentChunkPosition = { std::floor(pos.x / 16), std::floor(pos.y / 16) };
+        sf::Vector2f currentChunkPosition = {std::floor(pos.x / 16), std::floor(pos.y / 16)};
 
-        for (int o_x = -RENDER_DISTANCE; o_x <= RENDER_DISTANCE; o_x++) {
-            for (int o_y = -RENDER_DISTANCE; o_y <= RENDER_DISTANCE; o_y++) {
+        for (int o_x = -RENDER_DISTANCE; o_x <= RENDER_DISTANCE; o_x++)
+        {
+            for (int o_y = -RENDER_DISTANCE; o_y <= RENDER_DISTANCE; o_y++)
+            {
                 sf::Vector2i currentChunk = sf::Vector2i(currentChunkPosition) + sf::Vector2i(o_x, o_y);
-                if (!main_world.IsChunkExist(currentChunk)) {
+                if (!main_world.IsChunkExist(currentChunk))
+                {
                     main_world.PlaceChunk(currentChunk);
                     main_world.GenerateChunk(currentChunk);
                 }
@@ -180,7 +209,7 @@ int main() {
         window.setView(sf::View({0, 0}, {static_cast<float>(winWidth), static_cast<float>(winHeight)}));
 
         // Draw game staff
-        mainRenderWorld.Update(main_world, texture_manager); 
+        mainRenderWorld.Update(main_world, texture_manager);
         mainRenderWorld.setPosition(sf::Vector2f(-pos.x * TILE_SIZE, -pos.y * TILE_SIZE));
 
         renderTexture.setView(mainView);
@@ -196,44 +225,35 @@ int main() {
 
         renderTexture.clear(sf::Color::Transparent);
         // Draw debug staff
-        if (debug) {
-            sf::Vector2f manualRenderOffset = { -pos.x * TILE_SIZE, -pos.y * TILE_SIZE };
+        if (debug)
+        {
+            sf::Vector2f manualRenderOffset = {-pos.x * TILE_SIZE, -pos.y * TILE_SIZE};
             sf::Vertex quad[] = {
                 sf::Vertex(
                     sf::Vector2f(
                         manualRenderOffset.x + currentChunkPosition.x * 16 * TILE_SIZE,
-                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE
-                    ),
-                    sf::Color::Red
-                ),
+                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE),
+                    sf::Color::Red),
                 sf::Vertex(
                     sf::Vector2f(
                         manualRenderOffset.x + (currentChunkPosition.x + 1) * 16 * TILE_SIZE,
-                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE
-                    ),
-                    sf::Color::Blue
-                ),
+                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE),
+                    sf::Color::Blue),
                 sf::Vertex(
                     sf::Vector2f(
                         manualRenderOffset.x + (currentChunkPosition.x + 1) * 16 * TILE_SIZE,
-                        manualRenderOffset.y + (currentChunkPosition.y + 1) * 16 * TILE_SIZE
-                    ),
-                    sf::Color::Red
-                ),
+                        manualRenderOffset.y + (currentChunkPosition.y + 1) * 16 * TILE_SIZE),
+                    sf::Color::Red),
                 sf::Vertex(
                     sf::Vector2f(
                         manualRenderOffset.x + currentChunkPosition.x * 16 * TILE_SIZE,
-                        manualRenderOffset.y + (currentChunkPosition.y + 1) * 16 * TILE_SIZE
-                    ),
-                    sf::Color::Blue
-                ),
+                        manualRenderOffset.y + (currentChunkPosition.y + 1) * 16 * TILE_SIZE),
+                    sf::Color::Blue),
                 sf::Vertex(
                     sf::Vector2f(
                         manualRenderOffset.x + currentChunkPosition.x * 16 * TILE_SIZE,
-                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE
-                    ),
-                    sf::Color::Red
-                ),
+                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE),
+                    sf::Color::Red),
             };
             renderTexture.draw(quad, 5, sf::LineStrip);
         }
@@ -245,16 +265,15 @@ int main() {
         // Set inteface view
         window.setView(textView);
 
-        // Draw game staff
-
         // Draw debug staff
-        if (debug) {
-            text.setString(
-                std::to_string(1.0 / lastframetime) + '\n' +
-                std::to_string(mainCharacter.GetPosition().x) + " " + std::to_string(mainCharacter.GetPosition().y) + '\n' +
-                std::to_string(grayscale / 2)
-            );
-
+        if (debug)
+        {
+            std::stringstream debug_string;
+            debug_string << "FPS: " << 1.0 / lastframetime << '\n';
+            debug_string << "POS: "
+                         << "X:" << mainCharacter.GetPosition().x << " Y:" << mainCharacter.GetPosition().y << '\n';
+            debug_string << "shader_grayscale_value: " << grayscale / 2 << '\n';
+            text.setString(debug_string.str());
             window.draw(text);
         }
 

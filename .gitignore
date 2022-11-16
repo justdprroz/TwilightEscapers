@@ -4,3 +4,7 @@ tmp
 # Binaries
 bin
 dev
+
+# env files and dirs
+.vscode
+.idea

@@ -33,21 +33,29 @@ else()
     message(WARNING "Your compiler may be unsupported. Use supported one (GCC or MinGW) or modify source code")
 endif (UNIX OR MINGW)
 
-# Build SFML as static libs and include it
-set(BUILD_SHARED_LIBS FALSE)
-add_subdirectory(${CMAKE_SOURCE_DIR}/SFML)
-
 # Include and build engine
 add_subdirectory(${CMAKE_SOURCE_DIR}/sequoia-engine)
-include_directories(${CMAKE_SOURCE_DIR}/sequoia-engine/src)
-target_link_libraries(sequoia sfml-graphics sfml-window sfml-system)
-
 
 # Include and build executable
 include_directories("src")
+
 set(
     TWE_SOURCES
     src/main.cpp
 )
-add_executable(twe ${TWE_SOURCES})
-target_link_libraries(twe sfml-graphics sfml-window sfml-system ${STATIC_LIBS} sequoia)
+
+add_executable(
+    twe
+    ${TWE_SOURCES}
+)
+
+target_link_libraries(
+    twe
+    sequoia
+    ${STATIC_LIBS}
+)
+
+target_include_directories(
+    twe
+    PRIVATE "src"
+)
