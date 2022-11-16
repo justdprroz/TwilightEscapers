@@ -21,13 +21,13 @@ def check():
 def build():
     os.chdir(PROJ_PATH)
     os.chdir("tmp")
-    os.system("cmake -DCMAKE_BUILD_TYPE=Release ..")
-    os.system("make")
+    os.system("cmake -DCMAKE_BUILD_TYPE=Release -G \"MinGW Makefiles\" ..")
+    os.system("mingw32-make.exe")
 
 
 def run():
     os.chdir(PROJ_PATH)
-    os.system("./twe")
+    os.system("bin/twe.exe")
 
 
 check()
