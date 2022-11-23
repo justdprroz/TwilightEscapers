@@ -11,12 +11,15 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 
+std::ifstream f("config.json");
+nlohmann::json data = nlohmann::json::parse(f);
+
 // Global constants
-const int TEXTURE_SIZE = 16;
-const int TILE_SIZE = 32; // 32
+const int TEXTURE_SIZE = data["TEXTURE_SIZE"];
+const int TILE_SIZE = data["TILE_SIZE"]; // 32
 
 // Local constants
-const int RENDER_DISTANCE = 8;
+int RENDER_DISTANCE = data["RENDER_DISTANCE"];
 
 void Terminal()
 {
@@ -24,8 +27,6 @@ void Terminal()
 
 int main()
 {
-    // std::ifstream f("config.json");
-    // nlohmann::json data = nlohmann::json::parse(f);
 
     // std::cout << data << '\n';
 
@@ -36,11 +37,11 @@ int main()
     bool debug = false;
 
     // Some variables for window
-    std::string title = "EscapeFromTwilight ";
+    std::string title = data["WINDOW_TITLE"];
     int winWidth = 1000;
     int winHeight = 1000;
     float scale = 1;
-    float zoom = 1;
+    float zoom = data["ZOOM"];
 
     int viewWidth = winWidth * scale;
     int viewHeight = winHeight * scale;
@@ -60,7 +61,7 @@ int main()
     settings.antialiasingLevel = 16;
 
     // Create main render Window
-    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::Default, settings);
+    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::Default);
     window.setView(mainView);
     // window.setFramerateLimit(256); // check when you want
     // window.setVerticalSyncEnabled(true); // check when you want
@@ -99,7 +100,7 @@ int main()
 
     sf::Shader sh;
     sh.loadFromFile("assets/shaders/grayscale.frag", sf::Shader::Fragment);
-    float grayscale = 1.0;
+    float grayscale = 2.0;
 
     sh.setUniform("u_colorFactor", LinearInterpolation(grayscale, 0.f, 2.f, 0.f, 1.f));
 
@@ -197,7 +198,7 @@ int main()
                 if (!main_world.IsChunkExist(currentChunk))
                 {
                     main_world.PlaceChunk(currentChunk);
-                    main_world.GenerateChunk(currentChunk);
+                    main_world.GenerateChunkWIP(currentChunk);
                 }
             }
         }
@@ -273,6 +274,7 @@ int main()
             debug_string << "POS: "
                          << "X:" << mainCharacter.GetPosition().x << " Y:" << mainCharacter.GetPosition().y << '\n';
             debug_string << "shader_grayscale_value: " << grayscale / 2 << '\n';
+            debug_string << "zoom: " << zoom << '\n'; 
             text.setString(debug_string.str());
             window.draw(text);
         }

@@ -39,6 +39,8 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/sequoia-engine)
 # Include and build executable
 include_directories("src")
 
+# Game files
+
 set(
     TWE_SOURCES
     src/main.cpp
@@ -59,3 +61,16 @@ target_include_directories(
     twe
     PRIVATE "src"
 )
+
+# Test files
+
+# add_executable(noise src/noised.cpp)
+# target_link_libraries(
+#     noise
+#     sequoia
+#     ${STATIC_LIBS}
+# )
+# target_include_directories(
+#     noise
+#     PRIVATE "src"
+# )

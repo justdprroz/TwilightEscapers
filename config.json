@@ -1,0 +1,10 @@
+{
+    "TEXTURE_SIZE": 16,
+    "TILE_SIZE": 64,
+    "RENDER_DISTANCE": 32,
+    "WINDOW_TITLE": "EscapeFromTwilight(EFT)",
+    "ZOOM": 70.0,
+    "AMPLITUDE": 1.0,
+    "FREQUENCY": 0.01,
+    "OCTAVES": 8
+}
