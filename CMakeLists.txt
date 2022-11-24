@@ -64,13 +64,13 @@ target_include_directories(
 
 # Test files
 
-# add_executable(noise src/noised.cpp)
-# target_link_libraries(
-#     noise
-#     sequoia
-#     ${STATIC_LIBS}
-# )
-# target_include_directories(
-#     noise
-#     PRIVATE "src"
-# )
+add_executable(noise src/noised.cpp)
+target_link_libraries(
+    noise
+    sequoia
+    ${STATIC_LIBS}
+)
+target_include_directories(
+    noise
+    PRIVATE "src"
+)

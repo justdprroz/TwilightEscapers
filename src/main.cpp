@@ -78,7 +78,7 @@ int main()
     // World
     World main_world;
     main_world.SetSeed(420);
-    main_world.NoiseInit();
+    // main_world.NoiseInit();
 
     // main_world.LoadChunks("DebugWorldSave");
 
@@ -198,7 +198,7 @@ int main()
                 if (!main_world.IsChunkExist(currentChunk))
                 {
                     main_world.PlaceChunk(currentChunk);
-                    main_world.GenerateChunkWIP(currentChunk);
+                    main_world.GenerateChunk(currentChunk);
                 }
             }
         }
