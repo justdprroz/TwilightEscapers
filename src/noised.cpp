@@ -21,11 +21,9 @@ int main()
         for (int x = 0; x < width; x++)
         {
             double noise = noisegen.EvaluateFBM(x, y, 0, apm, freq, oct);
-            noise = (noise + 1.0) / 2.0;
-            noise = std::clamp(noise, 0.0, 1.0);
             // std::cout << x << " " << y << " " << noise << "\n";
             int c = 255 * noise;
-            // c = c / 32 * 32;
+            c = c / 4 * 4;
             std::cout << c << " " << c << " " << c << "\n";
         }
     }

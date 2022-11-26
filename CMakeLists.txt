@@ -74,3 +74,14 @@ target_include_directories(
     noise
     PRIVATE "src"
 )
+
+add_executable(hash src/hashed.cpp)
+target_link_libraries(
+    hash
+    sequoia
+    ${STATIC_LIBS}
+)
+target_include_directories(
+    hash
+    PRIVATE "src"
+)
