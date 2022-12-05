@@ -4,7 +4,7 @@
 #include <SFML/Graphics.hpp>
 // #include <Sequoia.hpp>
 #include <utility>
-#include <Utils.hpp>
+#include <Utils/Utils.hpp>
 #include <algorithm>
 #include <csignal>
 #include <sstream>

@@ -61,38 +61,3 @@ target_include_directories(
     twe
     PRIVATE "src"
 )
-
-# Test files
-
-add_executable(noise src/noised.cpp)
-target_link_libraries(
-    noise
-    sequoia
-    ${STATIC_LIBS}
-)
-target_include_directories(
-    noise
-    PRIVATE "src"
-)
-
-add_executable(hash src/hashed.cpp)
-target_link_libraries(
-    hash
-    sequoia
-    ${STATIC_LIBS}
-)
-target_include_directories(
-    hash
-    PRIVATE "src"
-)
-
-add_executable(particles src/particles.cpp)
-target_link_libraries(
-    particles
-    sequoia
-    ${STATIC_LIBS}
-)
-target_include_directories(
-    particles
-    PRIVATE "src"
-)
