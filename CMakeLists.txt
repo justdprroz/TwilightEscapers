@@ -85,3 +85,14 @@ target_include_directories(
     hash
     PRIVATE "src"
 )
+
+add_executable(particles src/particles.cpp)
+target_link_libraries(
+    particles
+    sequoia
+    ${STATIC_LIBS}
+)
+target_include_directories(
+    particles
+    PRIVATE "src"
+)

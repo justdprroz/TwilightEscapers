@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include <Sequoia.hpp>
+// #include <Sequoia.hpp>
 #include <utility>
 #include <Utils.hpp>
 #include <algorithm>
@@ -10,6 +10,8 @@
 #include <sstream>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <Render/WorldRenderer.hpp>
+#include <World/Player.hpp>
 
 std::ifstream f("config.json");
 nlohmann::json data = nlohmann::json::parse(f);
@@ -17,6 +19,8 @@ nlohmann::json data = nlohmann::json::parse(f);
 // Global constants
 const int TEXTURE_SIZE = data["TEXTURE_SIZE"];
 const int TILE_SIZE = data["TILE_SIZE"]; // 32
+
+extern int RENDERED_VERTICES;
 
 // Local constants
 int RENDER_DISTANCE = data["RENDER_DISTANCE"];
@@ -64,7 +68,7 @@ int main()
     sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::Default);
     window.setView(mainView);
     // window.setFramerateLimit(256); // check when you want
-    // window.setVerticalSyncEnabled(true); // check when you want
+    window.setVerticalSyncEnabled(false); // check when you want
     // bool fullscreen = true; // check when you want
     window.setKeyRepeatEnabled(false);
 
@@ -88,7 +92,7 @@ int main()
 
     // Rendering
     TextureManager texture_manager("assets");
-    RenderWorld mainRenderWorld;
+    WorldRenderer mainRenderWorld;
 
     // Debug gui
     sf::Text text;
@@ -103,6 +107,8 @@ int main()
     float grayscale = 2.0;
 
     sh.setUniform("u_colorFactor", LinearInterpolation(grayscale, 0.f, 2.f, 0.f, 1.f));
+
+    bool do_chunk_updates = true;
 
     while (window.isOpen())
     {
@@ -143,6 +149,10 @@ int main()
                     {
                         main_world.SaveChunks("DebugWorldSave");
                     }
+                }
+                if (event.key.code == sf::Keyboard::Z)
+                {
+                    do_chunk_updates = !do_chunk_updates;
                 }
                 if (event.key.code == sf::Keyboard::Equal)
                 {
@@ -211,7 +221,10 @@ int main()
         window.setView(sf::View({0, 0}, {static_cast<float>(winWidth), static_cast<float>(winHeight)}));
 
         // Draw game staff
-        mainRenderWorld.Update(main_world, texture_manager);
+        if (do_chunk_updates)
+        {
+            mainRenderWorld.Update(main_world, texture_manager);
+        }
         mainRenderWorld.setPosition(sf::Vector2f(-pos.x * TILE_SIZE, -pos.y * TILE_SIZE));
 
         renderTexture.setView(mainView);
@@ -271,11 +284,12 @@ int main()
         if (debug)
         {
             std::stringstream debug_string;
-            debug_string << "FPS: " << 1.0 / lastframetime << '\n';
+            debug_string << "Frame time: " << lastframetime * 1000 << "\n";
             debug_string << "POS: "
                          << "X:" << mainCharacter.GetPosition().x << " Y:" << mainCharacter.GetPosition().y << '\n';
             debug_string << "shader_grayscale_value: " << grayscale / 2 << '\n';
-            debug_string << "zoom: " << zoom << '\n'; 
+            debug_string << "zoom: " << zoom << '\n';
+            debug_string << "Vertices Rendered: " << RENDERED_VERTICES << "\n";
             text.setString(debug_string.str());
             window.draw(text);
         }
