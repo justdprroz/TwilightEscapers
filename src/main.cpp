@@ -113,6 +113,7 @@ int main()
             mainCharacter.HandleEvent(event);
             if (event.type == sf::Event::Closed)
             {
+                std::cout << "Window closed\n";
                 window.close();
             }
             if (event.type == sf::Event::Resized)
@@ -188,7 +189,7 @@ int main()
         // Invoke Updates
         mainCharacter.Update(lastframetime);
         sf::Vector2f pos = mainCharacter.GetPosition();
-        sf::Vector2f currentChunkPosition = {std::floor(pos.x / 16), std::floor(pos.y / 16)};
+        sf::Vector2f currentChunkPosition = {std::floor(pos.x / kChunkSize), std::floor(pos.y / kChunkSize)};
 
         for (int o_x = -RENDER_DISTANCE; o_x <= RENDER_DISTANCE; o_x++)
         {
@@ -232,28 +233,28 @@ int main()
             sf::Vertex quad[] = {
                 sf::Vertex(
                     sf::Vector2f(
-                        manualRenderOffset.x + currentChunkPosition.x * 16 * TILE_SIZE,
-                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE),
+                        manualRenderOffset.x + currentChunkPosition.x * kChunkSize * TILE_SIZE,
+                        manualRenderOffset.y + currentChunkPosition.y * kChunkSize * TILE_SIZE),
                     sf::Color::Red),
                 sf::Vertex(
                     sf::Vector2f(
-                        manualRenderOffset.x + (currentChunkPosition.x + 1) * 16 * TILE_SIZE,
-                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE),
+                        manualRenderOffset.x + (currentChunkPosition.x + 1) * kChunkSize * TILE_SIZE,
+                        manualRenderOffset.y + currentChunkPosition.y * kChunkSize * TILE_SIZE),
                     sf::Color::Blue),
                 sf::Vertex(
                     sf::Vector2f(
-                        manualRenderOffset.x + (currentChunkPosition.x + 1) * 16 * TILE_SIZE,
-                        manualRenderOffset.y + (currentChunkPosition.y + 1) * 16 * TILE_SIZE),
+                        manualRenderOffset.x + (currentChunkPosition.x + 1) * kChunkSize * TILE_SIZE,
+                        manualRenderOffset.y + (currentChunkPosition.y + 1) * kChunkSize * TILE_SIZE),
                     sf::Color::Red),
                 sf::Vertex(
                     sf::Vector2f(
-                        manualRenderOffset.x + currentChunkPosition.x * 16 * TILE_SIZE,
-                        manualRenderOffset.y + (currentChunkPosition.y + 1) * 16 * TILE_SIZE),
+                        manualRenderOffset.x + currentChunkPosition.x * kChunkSize * TILE_SIZE,
+                        manualRenderOffset.y + (currentChunkPosition.y + 1) * kChunkSize * TILE_SIZE),
                     sf::Color::Blue),
                 sf::Vertex(
                     sf::Vector2f(
-                        manualRenderOffset.x + currentChunkPosition.x * 16 * TILE_SIZE,
-                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE),
+                        manualRenderOffset.x + currentChunkPosition.x * kChunkSize * TILE_SIZE,
+                        manualRenderOffset.y + currentChunkPosition.y * kChunkSize * TILE_SIZE),
                     sf::Color::Red),
             };
             renderTexture.draw(quad, 5, sf::LineStrip);
@@ -282,8 +283,7 @@ int main()
         // Display everything drawn
         window.display();
     }
-
-    std::raise(SIGSEGV);
+    std::cout << "Exiting Game\n";
     // mainWorld.SaveChunks("World1");
     return 0;
 }
