@@ -13,6 +13,8 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 message(NOTICE "Build type is: " ${CMAKE_BUILD_TYPE})
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Set variables and compiler flags (Only these compilers supported)
 if (UNIX OR MINGW)
     set(CMAKE_CXX_FLAGS "-Wall -Wextra")

@@ -1,5 +1,6 @@
 // Copyright 2021-2022 JustDprroz
 
+#include "SFML/Window/WindowStyle.hpp"
 #include <iostream>
 #include <SFML/Graphics.hpp>
 // #include <Sequoia.hpp>
@@ -65,7 +66,7 @@ int main()
     settings.antialiasingLevel = 16;
 
     // Create main render Window
-    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::Default);
+    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::None);
     window.setView(mainView);
     // window.setFramerateLimit(256); // check when you want
     window.setVerticalSyncEnabled(false); // check when you want
