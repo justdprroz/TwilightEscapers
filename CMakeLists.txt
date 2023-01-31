@@ -13,6 +13,8 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 message(NOTICE "Build type is: " ${CMAKE_BUILD_TYPE})
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Set variables and compiler flags (Only these compilers supported)
 if (UNIX OR MINGW)
     set(CMAKE_CXX_FLAGS "-Wall -Wextra")
@@ -38,6 +40,8 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/sequoia-engine)
 
 # Include and build executable
 include_directories("src")
+
+# Game files
 
 set(
     TWE_SOURCES

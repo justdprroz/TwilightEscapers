@@ -1,22 +1,30 @@
 // Copyright 2021-2022 JustDprroz
 
+#include "SFML/Window/WindowStyle.hpp"
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include <Sequoia.hpp>
+// #include <Sequoia.hpp>
 #include <utility>
-#include <Utils.hpp>
+#include <Utils/Utils.hpp>
 #include <algorithm>
 #include <csignal>
 #include <sstream>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <Render/WorldRenderer.hpp>
+#include <World/Player.hpp>
+
+std::ifstream f("config.json");
+nlohmann::json data = nlohmann::json::parse(f);
 
 // Global constants
-const int TEXTURE_SIZE = 16;
-const int TILE_SIZE = 32; // 32
+const int TEXTURE_SIZE = data["TEXTURE_SIZE"];
+const int TILE_SIZE = data["TILE_SIZE"]; // 32
+
+extern int RENDERED_VERTICES;
 
 // Local constants
-const int RENDER_DISTANCE = 8;
+int RENDER_DISTANCE = data["RENDER_DISTANCE"];
 
 void Terminal()
 {
@@ -24,8 +32,6 @@ void Terminal()
 
 int main()
 {
-    // std::ifstream f("config.json");
-    // nlohmann::json data = nlohmann::json::parse(f);
 
     // std::cout << data << '\n';
 
@@ -36,11 +42,11 @@ int main()
     bool debug = false;
 
     // Some variables for window
-    std::string title = "EscapeFromTwilight ";
+    std::string title = data["WINDOW_TITLE"];
     int winWidth = 1000;
     int winHeight = 1000;
     float scale = 1;
-    float zoom = 1;
+    float zoom = data["ZOOM"];
 
     int viewWidth = winWidth * scale;
     int viewHeight = winHeight * scale;
@@ -60,10 +66,10 @@ int main()
     settings.antialiasingLevel = 16;
 
     // Create main render Window
-    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::Default, settings);
+    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight), title, sf::Style::None);
     window.setView(mainView);
     // window.setFramerateLimit(256); // check when you want
-    // window.setVerticalSyncEnabled(true); // check when you want
+    window.setVerticalSyncEnabled(false); // check when you want
     // bool fullscreen = true; // check when you want
     window.setKeyRepeatEnabled(false);
 
@@ -77,7 +83,7 @@ int main()
     // World
     World main_world;
     main_world.SetSeed(420);
-    main_world.NoiseInit();
+    // main_world.NoiseInit();
 
     // main_world.LoadChunks("DebugWorldSave");
 
@@ -87,7 +93,7 @@ int main()
 
     // Rendering
     TextureManager texture_manager("assets");
-    RenderWorld mainRenderWorld;
+    WorldRenderer mainRenderWorld;
 
     // Debug gui
     sf::Text text;
@@ -99,9 +105,11 @@ int main()
 
     sf::Shader sh;
     sh.loadFromFile("assets/shaders/grayscale.frag", sf::Shader::Fragment);
-    float grayscale = 1.0;
+    float grayscale = 2.0;
 
     sh.setUniform("u_colorFactor", LinearInterpolation(grayscale, 0.f, 2.f, 0.f, 1.f));
+
+    bool do_chunk_updates = true;
 
     while (window.isOpen())
     {
@@ -112,6 +120,7 @@ int main()
             mainCharacter.HandleEvent(event);
             if (event.type == sf::Event::Closed)
             {
+                std::cout << "Window closed\n";
                 window.close();
             }
             if (event.type == sf::Event::Resized)
@@ -141,6 +150,10 @@ int main()
                     {
                         main_world.SaveChunks("DebugWorldSave");
                     }
+                }
+                if (event.key.code == sf::Keyboard::Z)
+                {
+                    do_chunk_updates = !do_chunk_updates;
                 }
                 if (event.key.code == sf::Keyboard::Equal)
                 {
@@ -187,7 +200,7 @@ int main()
         // Invoke Updates
         mainCharacter.Update(lastframetime);
         sf::Vector2f pos = mainCharacter.GetPosition();
-        sf::Vector2f currentChunkPosition = {std::floor(pos.x / 16), std::floor(pos.y / 16)};
+        sf::Vector2f currentChunkPosition = {std::floor(pos.x / kChunkSize), std::floor(pos.y / kChunkSize)};
 
         for (int o_x = -RENDER_DISTANCE; o_x <= RENDER_DISTANCE; o_x++)
         {
@@ -209,7 +222,10 @@ int main()
         window.setView(sf::View({0, 0}, {static_cast<float>(winWidth), static_cast<float>(winHeight)}));
 
         // Draw game staff
-        mainRenderWorld.Update(main_world, texture_manager);
+        if (do_chunk_updates)
+        {
+            mainRenderWorld.Update(main_world, texture_manager);
+        }
         mainRenderWorld.setPosition(sf::Vector2f(-pos.x * TILE_SIZE, -pos.y * TILE_SIZE));
 
         renderTexture.setView(mainView);
@@ -231,28 +247,28 @@ int main()
             sf::Vertex quad[] = {
                 sf::Vertex(
                     sf::Vector2f(
-                        manualRenderOffset.x + currentChunkPosition.x * 16 * TILE_SIZE,
-                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE),
+                        manualRenderOffset.x + currentChunkPosition.x * kChunkSize * TILE_SIZE,
+                        manualRenderOffset.y + currentChunkPosition.y * kChunkSize * TILE_SIZE),
                     sf::Color::Red),
                 sf::Vertex(
                     sf::Vector2f(
-                        manualRenderOffset.x + (currentChunkPosition.x + 1) * 16 * TILE_SIZE,
-                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE),
+                        manualRenderOffset.x + (currentChunkPosition.x + 1) * kChunkSize * TILE_SIZE,
+                        manualRenderOffset.y + currentChunkPosition.y * kChunkSize * TILE_SIZE),
                     sf::Color::Blue),
                 sf::Vertex(
                     sf::Vector2f(
-                        manualRenderOffset.x + (currentChunkPosition.x + 1) * 16 * TILE_SIZE,
-                        manualRenderOffset.y + (currentChunkPosition.y + 1) * 16 * TILE_SIZE),
+                        manualRenderOffset.x + (currentChunkPosition.x + 1) * kChunkSize * TILE_SIZE,
+                        manualRenderOffset.y + (currentChunkPosition.y + 1) * kChunkSize * TILE_SIZE),
                     sf::Color::Red),
                 sf::Vertex(
                     sf::Vector2f(
-                        manualRenderOffset.x + currentChunkPosition.x * 16 * TILE_SIZE,
-                        manualRenderOffset.y + (currentChunkPosition.y + 1) * 16 * TILE_SIZE),
+                        manualRenderOffset.x + currentChunkPosition.x * kChunkSize * TILE_SIZE,
+                        manualRenderOffset.y + (currentChunkPosition.y + 1) * kChunkSize * TILE_SIZE),
                     sf::Color::Blue),
                 sf::Vertex(
                     sf::Vector2f(
-                        manualRenderOffset.x + currentChunkPosition.x * 16 * TILE_SIZE,
-                        manualRenderOffset.y + currentChunkPosition.y * 16 * TILE_SIZE),
+                        manualRenderOffset.x + currentChunkPosition.x * kChunkSize * TILE_SIZE,
+                        manualRenderOffset.y + currentChunkPosition.y * kChunkSize * TILE_SIZE),
                     sf::Color::Red),
             };
             renderTexture.draw(quad, 5, sf::LineStrip);
@@ -269,10 +285,12 @@ int main()
         if (debug)
         {
             std::stringstream debug_string;
-            debug_string << "FPS: " << 1.0 / lastframetime << '\n';
+            debug_string << "Frame time: " << lastframetime * 1000 << "\n";
             debug_string << "POS: "
                          << "X:" << mainCharacter.GetPosition().x << " Y:" << mainCharacter.GetPosition().y << '\n';
             debug_string << "shader_grayscale_value: " << grayscale / 2 << '\n';
+            debug_string << "zoom: " << zoom << '\n';
+            debug_string << "Vertices Rendered: " << RENDERED_VERTICES << "\n";
             text.setString(debug_string.str());
             window.draw(text);
         }
@@ -280,8 +298,7 @@ int main()
         // Display everything drawn
         window.display();
     }
-
-    std::raise(SIGSEGV);
+    std::cout << "Exiting Game\n";
     // mainWorld.SaveChunks("World1");
     return 0;
 }

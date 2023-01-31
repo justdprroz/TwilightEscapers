@@ -8,3 +8,5 @@ dev
 # env files and dirs
 .vscode
 .idea
+compile_commands.json
+.cache
