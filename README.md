@@ -1,5 +1,7 @@
 # TwilightEscapers
 
+# This repository was archived because I sort of ran out of ideas what to do in this game and probably will start over creating something new with new idead and experience
+
 ## What this game is about?
 
 This will be a RPG game about some guys escaping  \*Twilight\*(Some strange place where you will fight monsters and gather cool stuff)
